@@ -17,8 +17,8 @@ using namespace EuroScopePlugIn;
 
 namespace {
 const char* kName = "Indian Oceanic Strips";
-const char* kVersion = "0.1.0";
-const char* kAuthor = "VATSIM India vACC community";
+const char* kVersion = "0.1.1";
+const char* kAuthor = "Hardhik Erat";
 const char* kCopyright = "VATSIM use only";
 
 enum TagItems {

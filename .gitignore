@@ -3,6 +3,6 @@ dist/
 data/local/
 *.db
 *.db-journal
-plugin/build/
+plugin/build*/
 # AeroNav sector files are copyrighted: never commit or publish them, or anything derived from them
 Sector files/
