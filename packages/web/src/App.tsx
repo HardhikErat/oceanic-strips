@@ -238,6 +238,18 @@ function Main() {
 
   const st = app.status;
   const feedAge = st?.feed?.lastOk ? Math.round((Date.now() - st.feed.lastOk) / 1000) : undefined;
+  const feedWaiting = st?.source === 'vatsim' && !st.feed?.lastOk;
+  const feedStale = st?.source === 'vatsim' && feedAge !== undefined && feedAge >= 60;
+  const feedText = feedWaiting
+    ? `VATSIM feed: waiting for first download…${st?.feed?.error ? ` (${st.feed.error})` : ''}`
+    : feedStale
+      ? `VATSIM feed stale ${feedAge}s${st?.feed?.error ? ` – ${st.feed.error}` : ''}`
+      : `VATSIM feed ${feedAge ?? 0}s`;
+  const emptyHint = feedWaiting
+    ? `Waiting for the first download from the VATSIM data feed${st?.feed?.error ? ` (${st.feed.error}; retrying)` : ''}. Strips appear as soon as traffic data arrives.`
+    : feedStale
+      ? `The VATSIM data feed has not updated for ${feedAge}s${st?.feed?.error ? ` (${st.feed.error})` : ''}. Strips may be out of date; the server keeps retrying.`
+      : undefined;
 
   return (
     <div className={`app ${flight ? 'with-panel' : ''}`} style={{ ['--zoom' as string]: zoom }}>
@@ -254,7 +266,7 @@ function Main() {
         </div>
         <div className="status">
           <span className={`dot ${app.phase === 'ready' ? 'ok' : 'bad'}`} /> server
-          {st?.source === 'vatsim' && <span className={feedAge !== undefined && feedAge < 60 ? 'ok' : 'bad'}> · VATSIM feed {feedAge !== undefined ? `${feedAge}s` : '…'}</span>}
+          {st?.source === 'vatsim' && <span className={feedWaiting ? 'warn' : feedStale ? 'bad' : 'ok'} title={st.feed?.error || undefined}> · {feedText}</span>}
           {st?.source === 'sim' && <span className="ok"> · SIM {st.sim?.scenario} ×{st.clock.scale}</span>}
           <span className={st?.plugins.some((p) => p.unit === unit.id) ? 'ok' : 'muted'}> · ES {st?.plugins.length ? st.plugins.map((p) => p.controller).join(',') : 'off'}</span>
           <span className="muted"> · {board.stripCount} strips · </span>
@@ -309,6 +321,7 @@ function Main() {
           onBox={onBox}
           onEstimateIn={estimateIn}
           onEstimateOut={estimateOut}
+          emptyHint={emptyHint}
         />
         <aside className="side">
           <nav className="tabs">

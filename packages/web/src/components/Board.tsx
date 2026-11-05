@@ -13,9 +13,11 @@ interface Props {
   onBox: (box: 'A' | 'B' | 'G' | 'E', strip: FixStrip) => void;
   onEstimateIn: (f: Flight) => void;
   onEstimateOut: (f: Flight) => void;
+  /** shown on an empty board, e.g. while waiting for the VATSIM feed */
+  emptyHint?: string;
 }
 
-export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onBox, onEstimateIn, onEstimateOut }: Props) {
+export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onBox, onEstimateIn, onEstimateOut, emptyHint }: Props) {
   const strip = (s: FixStrip, f: Flight, compact = false) => (
     <Strip
       key={s.key}
@@ -105,7 +107,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
       <section className="fix-board">
         {board.columns.length === 0 && (
           <div className="empty big">
-            No active strips. Strips print {unit.printLeadMin} min before the entry estimate and are posted here once the estimate is received.
+            {emptyHint ?? `No active strips. Strips print ${unit.printLeadMin} min before the entry estimate and are posted here once the estimate is received.`}
           </div>
         )}
         {board.columns.map((col) => (

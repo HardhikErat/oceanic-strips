@@ -84,7 +84,7 @@ a { color: var(--accent); cursor: pointer; }
 .alerts.los { border-color: var(--bad); color: #fff; background: #4a1414; animation: pulse-bg 1.2s infinite; }
 .alerts.los .n-los { color: #fff; }
 .status { color: var(--muted); font-size: 12px; flex: 1 1 200px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.status .ok { color: var(--ok); } .status .bad { color: var(--bad); } .status .muted { color: var(--muted); }
+.status .ok { color: var(--ok); } .status .warn { color: var(--warn); } .status .bad { color: var(--bad); } .status .muted { color: var(--muted); }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
 .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); }
 .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-left: auto; }

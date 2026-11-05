@@ -139,7 +139,7 @@ function statusPayload() {
     type: 'status',
     clock: clock.info(),
     source: cfg.dataSource,
-    feed: feed ? { lastOk: feed.lastOk, error: feed.lastError, online: feed.online } : undefined,
+    feed: feed ? { lastOk: feed.lastOk, error: feed.lastError, busy: feed.busy, startedAt: feed.startedAt, online: feed.online } : undefined,
     sim: sim?.status(),
     plugins: plugins.status(),
     positions: [...clients].filter((c) => c.user.unit).map((c) => ({ cid: c.user.cid, name: c.user.name, unit: c.user.unit, role: c.user.role })),

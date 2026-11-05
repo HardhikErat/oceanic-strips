@@ -25,7 +25,7 @@ export interface User {
 export interface StatusMsg {
   clock: { simNow: number; realNow: number; scale: number };
   source: string;
-  feed?: { lastOk: number; error: string; online: { callsign: string; frequency: string; name: string }[] };
+  feed?: { lastOk: number; error: string; busy?: boolean; startedAt?: number; online: { callsign: string; frequency: string; name: string }[] };
   sim?: { scenario?: string; description?: string; aircraft: number; scale: number };
   plugins: { controller: string; unit?: string; version?: string; connectedAt: number; flights: number }[];
   positions: { cid: string; name: string; unit: string; role: string }[];
