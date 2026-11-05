@@ -148,6 +148,30 @@ describe('estimates', () => {
   });
 });
 
+describe('conflicts beyond Indian oceanic airspace', () => {
+  // VABX ends at 62.5E in this test; everything east of it is a neighbouring FIR
+  const unitsAt = (p: { lon: number }) => (p.lon < 62.5 ? ['VABX'] : []);
+  const runSplit = (...fs: Flight[]) =>
+    probe(fs.map((f) => toProbeFlight(f, computeTrajectory(f, T0), T0, rules)), { rules, now: T0, unitsAt });
+
+  it('a conflict only in the neighbouring FIR has no Indian unit (information only)', () => {
+    const a = mk('A1', 'AAA60 W1 AAA68', 350, { first: 'AAA60' });
+    const tA = computeTrajectory(a, T0).find((p) => p.name === 'AAA64')!.eto!;
+    const b = mk('B1', 'NNN19 N1 NNN11', 350, { first: 'AAA64', at: tA + 12 * MIN });
+    const c = runSplit(a, b);
+    expect(c).toHaveLength(1);
+    expect(c[0].location.fix).toBe('AAA64');
+    expect(c[0].units).toEqual([]);
+  });
+  it('the conflict inside our airspace is reported even if it gets worse beyond the boundary', () => {
+    const a = mk('A1', 'AAA60 W1 AAA68', 350, { tas: 450 });
+    const b = mk('B1', 'AAA60 W1 AAA68', 350, { tas: 520, at: T0 + 8 * MIN }); // catching up
+    const c = runSplit(a, b);
+    expect(c[0].units).toEqual(['VABX']);
+    expect(c[0].location.lon).toBeLessThan(62.5);
+  });
+});
+
 describe('unit hand-over', () => {
   it('next unit is the adjacent Indian oceanic unit even across a gap', () => {
     const two: FlightContext = {

@@ -42,8 +42,10 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
   const nextReport = us?.nextReportFix === s.fix && s.state !== 'PASSED';
   const restriction = f.restrictions.find((r) => r.fix === s.fix);
   const route = f.fpl.route;
-  // ADS-B shows the aircraft at a different level from the strip (common on VATSIM)
-  const liveFl = f.live && f.category === 'ADSB' && f.live.altitudeFt > 10000 ? Math.round(f.live.altitudeFt / 100) : undefined;
+  // the aircraft is at a different level from the strip (common on VATSIM). For ADS-B aircraft
+  // it is surveillance data; for procedural aircraft it is only the network position, so it
+  // is shown as a question for the controller to confirm with the pilot.
+  const liveFl = f.live && f.live.altitudeFt > 10000 ? Math.round(f.live.altitudeFt / 100) : undefined;
   const inChange = L.previous !== undefined && !L.confirmed;
   const levelMismatch = liveFl !== undefined && !inChange && !L.block && Math.abs(liveFl - L.cleared) >= 4 ? Math.round(liveFl / 10) * 10 : undefined;
 
@@ -73,7 +75,16 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
             )}
             {L.confirmed && <span className="pen tick">✓</span>}
             {levelMismatch !== undefined && (
-              <span className="lvl-mismatch" title={`ADS-B shows FL${levelMismatch}, strip has F${L.cleared}`}>ADS {levelMismatch}</span>
+              <span
+                className={`lvl-mismatch ${f.category === 'ADSB' ? '' : 'proc'}`}
+                title={
+                  f.category === 'ADSB'
+                    ? `ADS-B shows FL${levelMismatch}, strip has F${L.cleared}`
+                    : `VATSIM position shows FL${levelMismatch}, strip has F${L.cleared} – confirm the level with the pilot (e.g. ${f.callsign} CL ${levelMismatch})`
+                }
+              >
+                {f.category === 'ADSB' ? `ADS ${levelMismatch}` : `FL${levelMismatch}?`}
+              </span>
             )}
           </div>
           <div className="box c">

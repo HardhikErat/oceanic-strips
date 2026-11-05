@@ -7,7 +7,7 @@ import { distanceToPolygonEdgeNm } from '@oceanic/core';
 
 const cfg = loadConfig(process.argv.slice(2));
 const t0 = Date.now();
-const idx = loadSectorFiles(cfg.sectorFiles, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId })), path.join(cfg.dataDir, 'nav-cache.json'));
+const idx = loadSectorFiles(cfg.sectorFiles, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId, esPositions: u.esPositions })), path.join(cfg.dataDir, 'nav-cache.json'));
 console.log(`AIRAC ${idx.airac}  parsed in ${Date.now() - t0} ms`);
 console.log(`fixes ${Object.keys(idx.nav.fixes).length}  airways ${Object.keys(idx.nav.airways).length}  airports ${Object.keys(idx.nav.airports).length}  sectors ${idx.sectors.length}`);
 for (const a of idx.airspaces) {

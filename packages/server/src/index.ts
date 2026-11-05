@@ -20,10 +20,8 @@ const clock = new Clock();
 const db = new Db(path.join(cfg.dataDir, 'strips.db'));
 
 console.log('Reading sector files…');
-const nav = loadSectorFiles(cfg.sectorFiles, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId })), path.join(cfg.dataDir, 'nav-cache.json'));
-for (const a of nav.airspaces) {
-  if (!a.polygons.length) console.warn(`WARNING: no oceanic sectors found for ${a.id} – check sectorFiles / ownerId in config`);
-}
+const nav = loadSectorFiles(cfg.sectorFiles, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId, esPositions: u.esPositions })), path.join(cfg.dataDir, 'nav-cache.json'));
+for (const p of nav.problems ?? []) console.warn(`WARNING: ${p}`);
 console.log(`AIRAC ${nav.airac}: ${Object.keys(nav.nav.fixes).length} fixes, ${nav.airspaces.map((a) => `${a.id} ${a.polygons.length} sectors`).join(', ')}`);
 for (const [k, d] of Object.entries(cfg.sectorFiles)) console.log(`  ${k}: ${path.basename(d)}`);
 const airacNow = currentAirac();
@@ -156,6 +154,7 @@ function helloPayload(user: User) {
     rules: cfg.rules,
     airac: nav.airac,
     airacCurrent: currentAirac(),
+    setupProblems: nav.problems ?? [],
     airspaces: nav.airspaces,
     map: nav.map,
     neighbours: Object.values(nav.positions)

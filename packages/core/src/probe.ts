@@ -314,7 +314,12 @@ export function probe(flights: ProbeFlight[], ctx: ProbeContext): Conflict[] {
   for (let i = 0; i < flights.length; i++) {
     for (let j = i + 1; j < flights.length; j++) {
       const A = flights[i], B = flights[j];
-      let best: Candidate | null = null;
+      // a conflict inside Indian oceanic airspace always wins over one further down the
+      // route in a neighbouring FIR (which is that unit's traffic, shown for information only)
+      let bestIn: Candidate | null = null;
+      let bestOut: Candidate | null = null;
+      const worse = (c: Candidate, b: Candidate | null) =>
+        !b || SEV_RANK[c.severity!] > SEV_RANK[b.severity!] || (SEV_RANK[c.severity!] === SEV_RANK[b.severity!] && c.margin < b.margin);
       const fixA = new Set<string>(), fixB = new Set<string>();
       for (const sa of segs[i]) {
         for (const sb of segs[j]) {
@@ -323,12 +328,18 @@ export function probe(flights: ProbeFlight[], ctx: ProbeContext): Conflict[] {
           if (sb.minLon > sa.maxLon + lonMargin || sb.maxLon < sa.minLon - lonMargin) continue;
           const c = evalPair(A, B, sa, sb, ctx);
           if (!c || !c.severity) continue;
-          c.fixesA.forEach((f) => fixA.add(f));
-          c.fixesB.forEach((f) => fixB.add(f));
-          if (!best || SEV_RANK[c.severity] > SEV_RANK[best.severity!] || (SEV_RANK[c.severity] === SEV_RANK[best.severity!] && c.margin < best.margin)) {
-            best = c;
-          }
+          const inside = ctx.unitsAt(c.loc).length > 0;
+          if (inside) {
+            c.fixesA.forEach((f) => fixA.add(f));
+            c.fixesB.forEach((f) => fixB.add(f));
+            if (worse(c, bestIn)) bestIn = c;
+          } else if (worse(c, bestOut)) bestOut = c;
         }
+      }
+      const best = bestIn ?? bestOut;
+      if (best && !bestIn) {
+        best.fixesA.forEach((f) => fixA.add(f));
+        best.fixesB.forEach((f) => fixB.add(f));
       }
       if (best && best.severity) {
         const a = A.flight.callsign, b = B.flight.callsign;

@@ -90,7 +90,8 @@ export class Store extends EventEmitter {
     super();
     const nbFile = path.join(ROOT, 'config/neighbours.json');
     if (fs.existsSync(nbFile)) this.neighbourByFix = JSON.parse(fs.readFileSync(nbFile, 'utf8')).byFix ?? {};
-    const all = navIndex.airspaces.flatMap((a) => a.polygons.flat());
+    const allRaw = navIndex.airspaces.flatMap((a) => a.polygons.flat());
+    const all = allRaw.length ? allRaw : [{ lat: -10, lon: 55 }, { lat: 25, lon: 100 }];
     this.regionBox = {
       minLat: Math.min(...all.map((p) => p.lat)) - 12,
       maxLat: Math.max(...all.map((p) => p.lat)) + 12,
@@ -110,6 +111,11 @@ export class Store extends EventEmitter {
 
   unit(id: string): UnitConfig | undefined {
     return this.cfg.units.find((u) => u.id === id);
+  }
+
+  /** Indian units responsible for a point: inside the airspace, or on its boundary (TCPs). */
+  unitsAt(p: LatLon): string[] {
+    return this.navIndex.airspaces.filter((a) => inAirspace(p, a) || nearAirspaceEdge(p, a, 5)).map((a) => a.id);
   }
 
   neighbourAt(p: LatLon & { name?: string }, exclude: string): string | undefined {
@@ -281,7 +287,7 @@ export class Store extends EventEmitter {
     const conflicts = probe(pfs, {
       rules: this.ctx.rules,
       now,
-      unitsAt: (p) => this.navIndex.airspaces.filter((a) => inAirspace(p, a)).map((a) => a.id),
+      unitsAt: (p) => this.unitsAt(p),
     }).filter((c) => c.a === clone.callsign || c.b === clone.callsign);
     return { ok: true, conflicts, route: clone.route.map((p) => p.name) };
   }
@@ -352,7 +358,7 @@ export class Store extends EventEmitter {
     this.conflicts = probe(pfs, {
       rules: this.ctx.rules,
       now,
-      unitsAt: (p) => this.navIndex.airspaces.filter((a) => inAirspace(p, a)).map((a) => a.id),
+      unitsAt: (p) => this.unitsAt(p),
       isRelevant: (a, b) => near(a) || near(b) || near({ lat: (a.lat + b.lat) / 2, lon: (a.lon + b.lon) / 2 }),
     });
     const key = JSON.stringify(this.conflicts.map((c) => [c.id, c.severity, c.actualMin, c.actualNm, c.rule.id]));

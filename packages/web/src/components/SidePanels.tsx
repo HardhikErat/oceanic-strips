@@ -4,8 +4,9 @@ import { fmtTime } from '../derive.ts';
 import { client, type BoardConflict, type UnitConfig } from '../state.ts';
 
 export function ConflictList({ conflicts, unit, onSelect, canAck }: { conflicts: BoardConflict[]; unit: UnitConfig; onSelect: (cs: string) => void; canAck: boolean }) {
-  const mine = conflicts.filter((c) => !c.units.length || c.units.includes(unit.id));
+  const mine = conflicts.filter((c) => c.units.includes(unit.id));
   const others = conflicts.filter((c) => c.units.length && !c.units.includes(unit.id));
+  const beyond = conflicts.filter((c) => !c.units.length);
   const row = (c: BoardConflict) => (
     <div key={c.id} className={`conflict-row sev-${c.severity.toLowerCase()} ${c.acknowledged ? 'acked' : ''}`}>
       <div className="cr-head">
@@ -37,8 +38,15 @@ export function ConflictList({ conflicts, unit, onSelect, canAck }: { conflicts:
     <div className="panel-list">
       {mine.length === 0 && <div className="empty">No conflicts predicted in {unit.id}</div>}
       {mine.map(row)}
-      {others.length > 0 && <div className="sub-head">Other units / boundary</div>}
+      {others.length > 0 && <div className="sub-head">Other Indian oceanic units</div>}
       {others.map(row)}
+      {beyond.length > 0 && (
+        <>
+          <div className="sub-head">Beyond Indian oceanic airspace – for information</div>
+          <div className="hint">These are predicted after the aircraft have left Indian oceanic airspace, so they are the neighbouring unit's traffic. They are not counted or highlighted on your strips.</div>
+          <div className="beyond">{beyond.map(row)}</div>
+        </>
+      )}
     </div>
   );
 }

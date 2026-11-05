@@ -198,7 +198,11 @@ export interface Conflict {
   b: string;
   kind: ConflictKind;
   severity: ConflictSeverity;
-  /** unit(s) whose airspace contains the conflict location */
+  /**
+   * Indian unit(s) whose airspace contains the conflict location (or within a few NM of its
+   * boundary). Empty = beyond Indian oceanic airspace: the neighbouring unit's traffic,
+   * shown for information only.
+   */
   units: string[];
   location: LatLon & { fix?: string };
   /** time of minimum separation, epoch ms */

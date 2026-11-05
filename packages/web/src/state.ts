@@ -40,6 +40,7 @@ export interface AppState {
   rules?: SeparationRules;
   airac: string;
   airacCurrent?: string;
+  setupProblems?: string[];
   airspaces: UnitAirspace[];
   map: { airways: { name: string; points: [number, number][] }[]; fixes: { name: string; lat: number; lon: number }[] };
   neighbours: { callsign: string; name: string; frequency: string }[];
@@ -159,6 +160,7 @@ class Client {
           rules: m.rules,
           airac: m.airac,
           airacCurrent: m.airacCurrent,
+          setupProblems: m.setupProblems,
           airspaces: m.airspaces,
           map: m.map,
           neighbours: m.neighbours,

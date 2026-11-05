@@ -45,6 +45,12 @@ function PositionSelect() {
       <div className="login-card wide">
         <h1>Select position</h1>
         <p className="sub">Logged in as {app.user?.name} ({app.user?.cid}) · AIRAC {app.airac}</p>
+        {(app.setupProblems?.length ?? 0) > 0 && (
+          <div className="setup-problems inline">
+            <b>Set-up problem:</b>
+            <ul>{app.setupProblems!.map((p) => <li key={p}>{p}</li>)}</ul>
+          </div>
+        )}
         <div className="positions">
           {app.units.map((u) => (
             <div key={u.id} className="pos-card">
@@ -106,7 +112,8 @@ function Main() {
 
   const overdueMin = app.rules?.overdueMin ?? 3;
   const board = useMemo(() => buildBoard(app.flights, unit, now, overdueMin), [app.flights, unit, now, overdueMin]);
-  const myConflicts = app.conflicts.filter((c) => !c.units.length || c.units.includes(unit.id));
+  // only conflicts inside (or on the boundary of) this unit's airspace are this unit's
+  const myConflicts = app.conflicts.filter((c) => c.units.includes(unit.id));
   const los = myConflicts.filter((c) => c.severity === 'LOS' && !c.acknowledged).length;
   const warn = myConflicts.filter((c) => c.severity !== 'LOS').length;
   const unhandledRadio = app.radio.filter((r) => r.unit === unit.id && !r.handled).length;
@@ -284,12 +291,18 @@ function Main() {
           <button onClick={() => client.logout()}>Log out</button>
         </div>
       </header>
+      {(app.setupProblems?.length ?? 0) > 0 && (
+        <div className="setup-problems">
+          <b>Set-up problem – strips may be missing:</b>
+          <ul>{app.setupProblems!.map((p) => <li key={p}>{p}</li>)}</ul>
+        </div>
+      )}
 
       <main className="main">
         <Board
           board={board}
           unit={unit}
-          conflicts={app.conflicts}
+          conflicts={myConflicts}
           selected={selected?.cs}
           canEdit={canEdit}
           onSelect={(cs, fix) => setSelected({ cs, fix })}

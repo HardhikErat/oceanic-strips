@@ -35,6 +35,8 @@ export interface NavIndex {
   airac: string;
   /** data for the situation display: airways near the oceanic airspace */
   map: { airways: { name: string; points: [number, number][] }[]; fixes: { name: string; lat: number; lon: number }[] };
+  /** set-up problems to show to the controller (missing files, no oceanic sectors …) */
+  problems: string[];
 }
 
 export interface UnitSectorSpec {
@@ -43,6 +45,8 @@ export interface UnitSectorSpec {
   sectorFile: string;
   /** ESE position id that owns the oceanic sectors first (e.g. BOC, COC) */
   ownerId: string;
+  /** position callsigns of the unit (e.g. VABF_OC_CTR); their ESE id is used if it differs from ownerId */
+  esPositions?: string[];
 }
 
 const REGION = { minLat: -45, maxLat: 42, minLon: 28, maxLon: 118 };
@@ -253,6 +257,12 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
   let airac = '';
   let navLoaded = false;
   const sectorsByFile: Record<string, EsSector[]> = {};
+  const positionsByFile: Record<string, EsPosition[]> = {};
+  const problems: string[] = [];
+  for (const [key, f] of Object.entries(found)) {
+    if (!f.ese) problems.push(`${key}: no .ese file found in "${dirs[key]}". Put the AeroNav ${key} install folder (with the .ese/.sct directly inside) in "Sector files".`);
+    else if (!f.navDir) problems.push(`${key}: NavData folder not found next to the .ese file – airways and fixes may be incomplete.`);
+  }
 
   for (const [key, f] of Object.entries(found)) {
     if (f.ese) {
@@ -266,6 +276,7 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
         if (!positionsById[p.id] || p.prefix === key) positionsById[p.id] = p;
       }
       sectorsByFile[key] = sec;
+      positionsByFile[key] = pos;
       for (const s of sec) if (!sectors.some((x) => x.name === s.name)) sectors.push(s);
     }
     if (f.navDir && !navLoaded) {
@@ -277,12 +288,20 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
   }
 
   const airspaces: UnitAirspace[] = units.map((u) => {
-    const own = (sectorsByFile[u.sectorFile] ?? []).filter((s) => s.owners[0] === u.ownerId);
+    // the oceanic position's ESE id can change between AIRACs: take it from the position
+    // callsign in the same file, with the configured id as a fallback
+    const ids = new Set([u.ownerId]);
+    for (const p of positionsByFile[u.sectorFile] ?? []) if (u.esPositions?.includes(p.callsign)) ids.add(p.id);
+    const own = (sectorsByFile[u.sectorFile] ?? []).filter((s) => ids.has(s.owners[0]));
+    if (found[u.sectorFile]?.ese && !own.length) {
+      problems.push(`${u.id}: no oceanic sectors in the ${u.sectorFile} sector file (looked for sectors owned by ${[...ids].join('/')}). No strips can be produced for ${u.id}.`);
+    }
     return { id: u.id, polygons: own.map((s) => s.polygon) };
   });
 
   // situation display: airways with at least one node inside / near Indian oceanic airspace
-  const bbox = airspaces.flatMap((a) => a.polygons.flat());
+  const bboxRaw = airspaces.flatMap((a) => a.polygons.flat());
+  const bbox = bboxRaw.length ? bboxRaw : [{ lat: -10, lon: 55 }, { lat: 25, lon: 100 }];
   const minLat = Math.min(...bbox.map((p) => p.lat)) - 4, maxLat = Math.max(...bbox.map((p) => p.lat)) + 4;
   const minLon = Math.min(...bbox.map((p) => p.lon)) - 4, maxLon = Math.max(...bbox.map((p) => p.lon)) + 4;
   const inBox = (p: LatLon) => p.lat >= minLat && p.lat <= maxLat && p.lon >= minLon && p.lon <= maxLon;
@@ -308,7 +327,7 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
     if (p && !/^\d/.test(n)) mapOut.fixes.push({ name: n, lat: p.lat, lon: p.lon });
   }
 
-  const index: NavIndex = { nav, airspaces, sectors, positions, positionsById, airac, map: mapOut };
+  const index: NavIndex = { nav, airspaces, sectors, positions, positionsById, airac, map: mapOut, problems };
   fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
   fs.writeFileSync(cacheFile, JSON.stringify({ stamp, index }));
   return index;
