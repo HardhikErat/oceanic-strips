@@ -1,0 +1,9 @@
+{
+  "_note": "Fallback 'next unit' for boundary fixes whose neighbour FIR is not drawn in the sector files. Position callsigns come from the ESE [POSITIONS]. Verify with India vACC.",
+  "byFix": {
+    "PARAR": "OOMM_1_CTR",
+    "KITAL": "OOMM_1_CTR",
+    "ASPUX": "OOMM_1_CTR",
+    "ANGAL": "OOMM_1_CTR"
+  }
+}

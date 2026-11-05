@@ -1,0 +1,14 @@
+{
+  "name": "Boundary TCP – 3 minutes at KITAL",
+  "description": "Two aircraft at the same level reach the Muscat/Mumbai boundary point KITAL 3 minutes apart (India–Oman LoA requires 10 min). Modelled on the 2025 Arabian Sea near-miss, where the conflict was missed because strips were not scanned and updated.",
+  "startUtc": null,
+  "timeScale": 1,
+  "flights": [
+    { "callsign": "ABY405", "aircraft": "A320/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "OMSJ", "ades": "VRMM", "altn": "VCBI",
+      "route": "N0450F360 GOLNI P570 KITAL L894 BIBGO", "level": 360, "tas": 450, "mach": 0.78,
+      "remarks": "PBN/A1B1C1D1L1 SEL/ABCD", "squawk": "2141", "start": { "fix": "KITAL", "minutesBefore": 15 } },
+    { "callsign": "BOX622", "aircraft": "B77L/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OTHH", "ades": "VOBL", "altn": "VOMM",
+      "route": "N0480F360 GOLNI P570 KITAL P570 POMAN", "level": 360, "tas": 480, "mach": 0.83,
+      "remarks": "PBN/A1B1C1D1L1 SEL/BEFG", "squawk": "2142", "start": { "fix": "KITAL", "minutesBefore": 18 } }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "VABX",
+  "name": "Mumbai Oceanic",
+  "radioName": "Mumbai Radio",
+  "esPositions": ["VABF_OC_CTR"],
+  "frequency": "132.600",
+  "hf": "8.864",
+  "sectorFile": "VABF",
+  "ownerId": "BOC",
+  "printLeadMin": 40,
+  "coordLeadMin": 30,
+  "passedRetentionMin": 5,
+  "_note": "printLeadMin / coordLeadMin are placeholders until India vACC confirms the real values (PLAN.md §5)."
+}

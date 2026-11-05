@@ -1,0 +1,32 @@
+{
+  "name": "Mixed traffic – Mumbai & Chennai Radio",
+  "description": "QTR8E (the photo flight) with a same-track follower 7 min behind, a crossing at DONSA, an ADS-B pair on M300, a VABX→VOMX transfer on N563, and on P574 a procedural flight that misses a report plus an opposite-direction aircraft at the same level.",
+  "startUtc": null,
+  "timeScale": 1,
+  "flights": [
+    { "callsign": "QTR8E", "aircraft": "B77W/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OTHH", "ades": "VRMM", "altn": "VOTV",
+      "route": "N0485F350 GOLNI P570 KITAL/M083F350 L894 BIBGO/N0491F350", "level": 350, "tas": 485, "mach": 0.83,
+      "remarks": "PBN/A1B1C1D1L1 DOF/261105 SEL/DQCM", "squawk": "2107", "start": { "fix": "KITAL", "minutesBefore": 12 }, "estimateErrorMin": 1 },
+    { "callsign": "QTR678", "aircraft": "A359/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OTHH", "ades": "VRMM", "altn": "VCBI",
+      "route": "N0480F350 GOLNI P570 KITAL L894 BIBGO", "level": 350, "tas": 480, "mach": 0.83,
+      "remarks": "PBN/A1B1C1D1L1 SEL/AGHL", "squawk": "2111", "start": { "fix": "KITAL", "minutesBefore": 19 }, "estimateErrorMin": 1 },
+    { "callsign": "ETH640", "aircraft": "B788/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/LB1D1", "adep": "HAAB", "ades": "VABB", "altn": "VAAH",
+      "route": "N0490F350 ORLID G450 MEPAT", "level": 350, "tas": 490, "mach": 0.85,
+      "remarks": "PBN/A1B1C1D1L1O1S2 SEL/BKFM", "squawk": "2117", "start": { "fix": "DONSA", "minutesBefore": 84 } },
+    { "callsign": "UAE652", "aircraft": "B77W/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/LB1D1", "adep": "OMDB", "ades": "VRMM", "altn": "VOTV",
+      "route": "N0490F370 KADOL M300 VASTU", "level": 370, "tas": 490, "mach": 0.84,
+      "remarks": "PBN/A1B1C1D1L1O1S2 SEL/CJDR", "squawk": "2124", "start": { "fix": "KADOL", "minutesBefore": 8 } },
+    { "callsign": "FDB571", "aircraft": "B38M/M-SDE1E2E3FGHIJ2J3J4J5M1RWXY/LB1", "adep": "OMDB", "ades": "VRMM", "altn": "VCBI",
+      "route": "N0460F370 KADOL M300 VASTU", "level": 370, "tas": 460, "mach": 0.79,
+      "remarks": "PBN/A1B1C1D1L1O1S1 SEL/EHKQ", "squawk": "2125", "start": { "fix": "KADOL", "minutesBefore": 13 } },
+    { "callsign": "UAE354", "aircraft": "A388/J-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/LB1D1", "adep": "OMDB", "ades": "WSSS", "altn": "WMKK",
+      "route": "N0490F390 KATBI N563 MEMAK", "level": 390, "tas": 490, "mach": 0.85,
+      "remarks": "PBN/A1B1C1D1L1O1S2 SEL/GMPS", "squawk": "2131", "start": { "fix": "KATBI", "minutesBefore": 25 } },
+    { "callsign": "AIC105", "aircraft": "A20N/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "VOMM", "ades": "WIII", "altn": "WIMM",
+      "route": "N0450F350 MMV P574 NOPEK", "level": 350, "tas": 450, "mach": 0.78,
+      "remarks": "PBN/A1B1C1D1L1 SEL/DQCM", "squawk": "2201", "start": { "fix": "GIRNA", "minutesBefore": 6 }, "estimateErrorMin": 1, "silentAfterFix": "ELSAR" },
+    { "callsign": "SIA428", "aircraft": "B78X/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "WSSS", "ades": "VOMM", "altn": "VOBL",
+      "route": "N0480F350 NOPEK P574 MMV", "level": 350, "tas": 480, "mach": 0.84,
+      "remarks": "PBN/A1B1C1D1L1 SEL/HLAS", "squawk": "2207", "start": { "fix": "NOPEK", "minutesBefore": 25 }, "estimateErrorMin": 1 }
+  ]
+}

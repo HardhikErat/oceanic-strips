@@ -1,0 +1,13 @@
+{
+  "id": "VOMX",
+  "name": "Chennai Oceanic",
+  "radioName": "Chennai Radio",
+  "esPositions": ["VOMF_OC_CTR"],
+  "frequency": "126.150",
+  "hf": "8.864",
+  "sectorFile": "VOMF",
+  "ownerId": "COC",
+  "printLeadMin": 40,
+  "coordLeadMin": 30,
+  "passedRetentionMin": 5
+}

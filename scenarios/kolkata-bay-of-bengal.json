@@ -1,0 +1,20 @@
+{
+  "name": "Kolkata Radio – Bay of Bengal",
+  "description": "IGO53 Kolkata→Kuala Lumpur on L759 (VECX→VOMX transfer at LIBDI/NISUN), SIA406 Singapore→Delhi on W111 (VOMX→VECX at VATLA) crossing THA323 on N895 at BUBKO 11 min apart at the same level (15 min required), and AIC775 Port Blair→Kolkata on P628.",
+  "startUtc": null,
+  "timeScale": 1,
+  "flights": [
+    { "callsign": "IGO53", "aircraft": "A21N/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "VECC", "ades": "WMKK", "altn": "WSSS",
+      "route": "N0450F350 TATUX L759 MIPAK", "level": 350, "tas": 450, "mach": 0.78,
+      "remarks": "PBN/A1B1C1D1L1 SEL/AKDM", "squawk": "2301", "start": { "fix": "LAMBU", "minutesBefore": 8 }, "estimateErrorMin": 1 },
+    { "callsign": "SIA406", "aircraft": "B78X/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "WSSS", "ades": "VIDP", "altn": "VILK",
+      "route": "N0480F350 PPB W111 BUBKO", "level": 350, "tas": 480, "mach": 0.84,
+      "remarks": "PBN/A1B1C1D1L1 SEL/BHJR", "squawk": "2302", "start": { "fix": "BUBKO", "minutesBefore": 70 }, "estimateErrorMin": 1 },
+    { "callsign": "THA323", "aircraft": "B788/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/LB1D1", "adep": "VTBS", "ades": "VIDP", "altn": "VILK",
+      "route": "N0470F350 SAGOD N895 BIXON", "level": 350, "tas": 470, "mach": 0.84,
+      "remarks": "PBN/A1B1C1D1L1O1S2 SEL/CFKM", "squawk": "2303", "start": { "fix": "BUBKO", "minutesBefore": 81 } },
+    { "callsign": "AIC775", "aircraft": "A320/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "VOPB", "ades": "VECC", "altn": "VEBS",
+      "route": "N0440F330 IGREX P628 KAGUL", "level": 330, "tas": 440, "mach": 0.77,
+      "remarks": "PBN/A1B1C1D1L1 SEL/DLMQ", "squawk": "2304", "start": { "fix": "IGREX", "minutesBefore": 10 }, "estimateErrorMin": 1 }
+  ]
+}

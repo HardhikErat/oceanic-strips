@@ -1,0 +1,22 @@
+{
+  "_note": "Overrides on top of the built-in India vACC OCM rule set (packages/core/src/rules.ts).",
+  "loas": [
+    {
+      "id": "india-oman",
+      "name": "LoA India (AAI Mumbai OCC) – Oman (PACA Muscat ACC)",
+      "units": ["VABX"],
+      "neighbour": "OOMM",
+      "_tcps_note": "Mumbai/Muscat boundary points derived from the VABF sector file boundary. Verify with India vACC.",
+      "tcps": ["PARAR", "KITAL", "ASPUX", "ANGAL"],
+      "sameDirectionMin": 10,
+      "machTable": [
+        { "machDiff": 0.06, "minutes": 5 },
+        { "machDiff": 0.05, "minutes": 6 },
+        { "machDiff": 0.04, "minutes": 7 },
+        { "machDiff": 0.03, "minutes": 8 },
+        { "machDiff": 0.02, "minutes": 9 }
+      ],
+      "source": "LoA India–Oman Para G 1.1"
+    }
+  ]
+}

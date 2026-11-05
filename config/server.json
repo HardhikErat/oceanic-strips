@@ -1,0 +1,27 @@
+{
+  "port": 8787,
+  "host": "127.0.0.1",
+  "dataDir": "data/local",
+  "sectorFiles": {
+    "VABF": "Sector files/VABF-Install_*",
+    "VOMF": "Sector files/VOMF-Install_*",
+    "VECF": "Sector files/VECF-Install_*"
+  },
+  "units": ["config/units/vabx.json", "config/units/vomx.json", "config/units/vecx.json"],
+  "rules": "config/rules.json",
+  "dataSource": "vatsim",
+  "vatsimFeedUrl": "https://data.vatsim.net/v3/vatsim-data.json",
+  "vatsimPollSeconds": 15,
+  "auth": {
+    "mode": "local",
+    "vatsim": {
+      "authBase": "https://auth.vatsim.net",
+      "clientId": "",
+      "clientSecret": "",
+      "redirectUri": "http://localhost:8787/auth/vatsim/callback"
+    }
+  },
+  "pluginToken": "change-me",
+  "liveForProcedural": false,
+  "trainingAutoReports": true
+}

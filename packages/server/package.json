@@ -1,0 +1,20 @@
+{
+  "name": "@oceanic/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts --source sim --scenario ../../scenarios/training-mixed.json",
+    "start": "tsx src/index.ts",
+    "import-nav": "tsx src/tools/importNav.ts"
+  },
+  "dependencies": {
+    "@oceanic/core": "*",
+    "ws": "^8.18.0",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13"
+  }
+}

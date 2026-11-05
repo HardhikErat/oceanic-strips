@@ -1,0 +1,14 @@
+{
+  "id": "VECX",
+  "name": "Kolkata Oceanic",
+  "radioName": "Kolkata Radio",
+  "esPositions": ["VECF_OC_CTR"],
+  "frequency": "128.300",
+  "hf": "8.864",
+  "sectorFile": "VECF",
+  "ownerId": "KOX",
+  "printLeadMin": 40,
+  "coordLeadMin": 30,
+  "passedRetentionMin": 5,
+  "_note": "The VECF sector file names this position 'Kolkata Oceanic Control'; 'Kolkata Radio' follows the OCM convention for Indian oceanic HF stations. HF 8.864 is the OCM example frequency – confirm Kolkata's with India vACC."
+}

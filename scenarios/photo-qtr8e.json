@@ -1,0 +1,11 @@
+{
+  "name": "Photo replay – QTR8E 24 Mar",
+  "description": "Recreates the Mumbai OCC strip set in the reference photo: QTR8E OTHH–VRMM, KITAL 0053, six strips KITAL…BIBGO.",
+  "startUtc": "2026-03-24T00:41:00Z",
+  "timeScale": 1,
+  "flights": [
+    { "callsign": "QTR8E", "aircraft": "B77W/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OTHH", "ades": "VRMM", "altn": "VOTV",
+      "route": "N0485F350 GOLNI P570 KITAL/M083F350 L894 BIBGO/N0491F350", "level": 350, "tas": 485, "mach": 0.83,
+      "remarks": "PBN/A1B1C1D1L10 DOF/260324 SEL/DQCM", "squawk": "2107", "start": { "fix": "KITAL", "minutesBefore": 12 } }
+  ]
+}

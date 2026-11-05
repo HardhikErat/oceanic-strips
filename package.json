@@ -1,0 +1,23 @@
+{
+  "name": "indian-oceanic-strips",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Electronic flight progress strips for Mumbai Radio (VABX) and Chennai Radio (VOMX) on VATSIM",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "npm run dev -w @oceanic/server",
+    "dev:web": "npm run dev -w @oceanic/web",
+    "build": "npm run build -w @oceanic/web",
+    "start": "npm run start -w @oceanic/server",
+    "sim": "npm run start -w @oceanic/server -- --source sim --scenario scenarios/training-mixed.json",
+    "import-nav": "npm run import-nav -w @oceanic/server",
+    "test": "vitest run",
+    "typecheck": "tsc -p packages/core && tsc -p packages/server && tsc -p packages/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

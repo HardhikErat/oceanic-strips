@@ -1,0 +1,20 @@
+{
+  "name": "Mach Number Technique on L894",
+  "description": "Pairs on L894 at F350: preceding M.84 / following M.80 7.5 min behind (MNT 7 min applies), and an equal-Mach pair 9 min apart (10 min required).",
+  "startUtc": null,
+  "timeScale": 1,
+  "flights": [
+    { "callsign": "OMA201", "aircraft": "B789/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OOMS", "ades": "VRMM", "altn": "VOTV",
+      "route": "N0490F350 GOLNI P570 KITAL L894 BIBGO", "level": 350, "tas": 490, "mach": 0.84,
+      "remarks": "PBN/A1B1C1D1L1 SEL/CDFG", "squawk": "2151", "start": { "fix": "BOLUR", "minutesBefore": 10 } },
+    { "callsign": "IGO1782", "aircraft": "A21N/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "OMDB", "ades": "VRMM", "altn": "VOTV",
+      "route": "N0460F350 GOLNI P570 KITAL L894 BIBGO", "level": 350, "tas": 460, "mach": 0.80,
+      "remarks": "PBN/A1B1C1D1L1 SEL/DEHJ", "squawk": "2152", "start": { "fix": "BOLUR", "minutesBefore": 17.5 } },
+    { "callsign": "GFA270", "aircraft": "A321/M-SDE1E2E3FGHIJ1RWXY/L", "adep": "OBBI", "ades": "VRMM", "altn": "VCBI",
+      "route": "N0460F330 GOLNI P570 KITAL L894 BIBGO", "level": 330, "tas": 460, "mach": 0.79,
+      "remarks": "PBN/A1B1C1D1L1 SEL/FGJK", "squawk": "2153", "start": { "fix": "BOLUR", "minutesBefore": 8 } },
+    { "callsign": "SVA754", "aircraft": "B77W/H-SDE1E2E3FGHIJ2J3J4J5M1RWXYZ/L", "adep": "OEJN", "ades": "VRMM", "altn": "VCBI",
+      "route": "N0460F330 GOLNI P570 KITAL L894 BIBGO", "level": 330, "tas": 460, "mach": 0.79,
+      "remarks": "PBN/A1B1C1D1L1 SEL/GHKL", "squawk": "2154", "start": { "fix": "BOLUR", "minutesBefore": 17 } }
+  ]
+}
