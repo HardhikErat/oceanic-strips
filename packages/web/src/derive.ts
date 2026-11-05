@@ -136,6 +136,12 @@ export function penTime(newMs: number, oldMs?: number): string {
   return o.slice(0, 2) === n.slice(0, 2) ? n.slice(2) : n;
 }
 
+/** SELCAL as written on strips: DQCM -> DQ-CM */
+export function fmtSelcal(s?: string): string {
+  const c = (s ?? '').replace(/[^A-Z]/gi, '').toUpperCase();
+  return c.length === 4 ? `${c.slice(0, 2)}-${c.slice(2)}` : c;
+}
+
 export function machText(m?: number) {
   return m === undefined ? '' : `M.${String(Math.round(m * 100)).padStart(2, '0')}`;
 }

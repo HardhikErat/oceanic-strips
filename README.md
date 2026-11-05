@@ -79,6 +79,8 @@ Top row, left to right:
 5. Next fix and its estimate.
 6. Previous fix and its estimate.
 7. Write boxes.
+
+The equipment box also shows the **SELCAL** code from the flight plan (e.g. DQ-CM).
 8. DOF, print time, strip n of total, and the direction chevron.
 
 The bottom row shows ADEP, the route as filed, ADES, ALTN and PBN.
@@ -92,8 +94,8 @@ Other marks:
 
 Double-click Box A to enter a report and the next-fix box to revise its estimate. Click a strip to open the flight panel.
 
-**The flight panel** follows OCM §8:
-- **ADS-B aircraft:** FL and Mach copied (ADS-B identification), SELCAL check, "remain on SELCAL watch, no position reports required".
+**The flight panel** shows the SELCAL next to the callsign and follows the OCM §8 steps:
+- **ADS-B aircraft:** FL and Mach copied (ADS-B identification), SELCAL check; no position reports required.
 - **Other aircraft:** PTLMEE position reports, SELCAL check, next report point.
 - **Clearances:** level and Mach, time restriction, reroute and weather deviation. Each can be checked with **Probe** (what-if) before you issue it.
 - **Also:** emergency, estimate out and hand-off, the estimates table, strip marks, and the history.

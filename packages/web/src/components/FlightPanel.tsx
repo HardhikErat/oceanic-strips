@@ -1,8 +1,8 @@
-// Flight panel: OCM §8 workflow with phraseology, clearances with a what-if probe,
+// Flight panel: OCM §8 workflow steps, clearances with a what-if probe,
 // estimates, strip marks and the flight's amendment history.
 import { useEffect, useMemo, useState } from 'react';
 import { machOf, parsePositionReport, parseHHMM, type Command, type Conflict, type Flight } from '@oceanic/core';
-import { fmtTime, machText, trajectoryOf } from '../derive.ts';
+import { fmtSelcal, fmtTime, machText, trajectoryOf } from '../derive.ts';
 import { client, useApp, useNow, type UnitConfig } from '../state.ts';
 
 interface Props {
@@ -14,15 +14,6 @@ interface Props {
 }
 
 const MARKS = ['✓', '✗', 'Ⓒ', 'R', '⊕', '!', '?'];
-
-function Phrase({ who, text }: { who: 'ATC' | 'PILOT'; text: string }) {
-  return (
-    <div className={`phrase ${who.toLowerCase()}`} title="Click to copy" onClick={() => navigator.clipboard?.writeText(text)}>
-      <span className="who">{who}</span>
-      <span>{text}</span>
-    </div>
-  );
-}
 
 function ProbeResult({ result }: { result?: { ok: boolean; error?: string; conflicts?: Conflict[] } | 'busy' }) {
   if (!result) return null;
@@ -46,7 +37,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
   const now = useNow(5000);
   const us = f.units[unit.id];
   const traj = trajectoryOf(f, now);
-  const radio = unit.radioName;
   // level the aircraft is actually flying per ADS-B (rounded to the nearest 1000 ft level)
   const liveFl = f.live && f.category === 'ADSB' && f.live.altitudeFt > 10000 ? Math.round(f.live.altitudeFt / 1000) * 10 : undefined;
   const cs = f.callsign;
@@ -111,24 +101,25 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
   };
   const rrCmd = (): Command | null => (rr.trim() ? { type: 'reroute', callsign: cs, unit: unit.id, route: rr.trim() } : null);
 
-  const nextUnitName = (id?: string) => app.units.find((u) => u.id === id)?.radioName ?? app.neighbours.find((n) => n.callsign === id)?.name ?? id ?? 'next unit';
-  const machWords = (m?: number) => (m ? `Mach decimal ${Math.round(m * 100)}` : '');
-
   const lvlC = levelCmd();
-  const lvlPhrase = lvlC && lvlC.type === 'clear_level'
-    ? `${cs}, ${radio}, ${lvlC.level > f.level.cleared ? 'climb to' : lvlC.level < f.level.cleared ? 'descend to' : 'maintain'} FL${lvlC.level}${lvlC.mach ? `, ${lvlC.mach < (f.mach ?? 1) ? 'reduce to' : 'increase to'} Mach ${lvlC.mach.toFixed(2)}` : ''}, report reaching.`
-    : '';
+  const selcal = fmtSelcal(f.selcal);
 
   return (
     <aside className="flight-panel">
       <header className="fp-head">
         <div>
-          <div className="fp-cs">{cs}{f.emergency && <span className="emerg-chip">EMERGENCY</span>}</div>
+          <div className="fp-cs">
+            {cs}
+            <span className={`fp-selcal ${selcal ? '' : 'none'}`} title="SELCAL code from the flight plan (Item 18 SEL/)">
+              SELCAL <b>{selcal || 'none filed'}</b>
+            </span>
+            {f.emergency && <span className="emerg-chip">EMERGENCY</span>}
+          </div>
           <div className="fp-sub">
             {f.fpl.aircraftType}/{f.fpl.wake} · {f.fpl.adep} → {f.fpl.ades} ({f.fpl.altn || '—'}) · RFL {f.fpl.rfl} · SSR {f.fpl.squawk || '—'} · {f.source}
           </div>
           <div className="fp-sub">
-            SELCAL <b>{f.selcal ?? '—'}</b> · PBN {f.pbn ?? '—'} · 10a {f.fpl.equipment || '—'} · 10b {f.fpl.surveillance || '—'}
+            PBN {f.pbn ?? '—'} · 10a {f.fpl.equipment || '—'} · 10b {f.fpl.surveillance || '—'}
           </div>
         </div>
         <button className="close" onClick={onClose} title="Close">×</button>
@@ -191,17 +182,11 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
             </div>
           )}
 
-          {/* Previous unit hand-over, OCM §8 */}
-          <div className="phrases">
-            <Phrase who="ATC" text={`${cs}, entering oceanic airspace; radar service terminated, report position to ${radio} on ${unit.hf} alias ${unit.frequency}. Jai Hind!`} />
-          </div>
-
           {f.category === 'ADSB' ? (
             <div className="workflow">
               <h4>ADS-B aircraft – OCM §8.1</h4>
-              <Phrase who="PILOT" text={`${radio}, ${radio}, ${cs}, FL${f.level.cleared}`} />
               <div className="step">
-                <Phrase who="ATC" text={`${cs}, ${radio} Namashkar, FL${liveFl ?? f.level.cleared} copied, report Mach number.`} />
+                <span className="step-label">Level</span>
                 <button
                   disabled={!canEdit}
                   className={us.contact?.adsbLevel ? 'done' : ''}
@@ -212,7 +197,7 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
                 </button>
               </div>
               <div className="step">
-                <Phrase who="ATC" text={`${cs}, ${machWords(f.mach) || 'Mach …'} copied, standby for SELCAL check.`} />
+                <span className="step-label">Mach</span>
                 <input className="w60" placeholder="Mach" value={mach} onChange={(e) => setMach(e.target.value)} />
                 <button
                   disabled={!canEdit}
@@ -223,17 +208,16 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
                 </button>
               </div>
               <div className="step">
-                <Phrase who="PILOT" text={`SELCAL check OK, ${cs}`} />
+                <span className="step-label">SELCAL <b className="selcal-code">{selcal || '—'}</b></span>
                 <button disabled={!canEdit} className={us.contact?.selcal ? 'done' : ''} onClick={() => run({ type: 'selcal_ok', callsign: cs, unit: unit.id })}>
-                  SELCAL OK {us.contact?.selcal ? '✓' : ''}
+                  SELCAL check OK {us.contact?.selcal ? '✓' : ''}
                 </button>
               </div>
-              <Phrase who="ATC" text={`${cs}, remain on SELCAL watch, no position reports required.`} />
+              <p className="hint">No position reports required.</p>
             </div>
           ) : (
             <div className="workflow">
               <h4>Other aircraft – OCM §8.2 (PTLMEE)</h4>
-              <Phrase who="PILOT" text={`${radio}, ${radio}, ${cs}, with position.`} />
               <div className="step col">
                 <label>Position report: Position · Time · Level · Mach · Estimate next · Next after</label>
                 <div className="row">
@@ -258,20 +242,23 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
                 </div>
                 {typeof parsedReport === 'string' && <div className="probe err">{parsedReport}</div>}
                 {parsedReport && typeof parsedReport !== 'string' && (
-                  <Phrase
-                    who="ATC"
-                    text={`${cs}, ${radio}, position ${parsedReport.fix} at ${fmtTime(parsedReport.time)} Zulu${parsedReport.level ? `, FL${parsedReport.level}` : ''}.${parsedReport.nextFix ? ` Estimating ${parsedReport.nextFix} at ${fmtTime(parsedReport.nextTime)} Zulu` : ''}${parsedReport.thenFix ? `, ${parsedReport.thenFix} thereafter` : ''}.${parsedReport.mach ? ` ${machWords(parsedReport.mach)}` : ''}${us.contact?.selcal ? '' : ', standby for SELCAL check'}.`}
-                  />
+                  <div className="parsed">
+                    {parsedReport.fix} {fmtTime(parsedReport.time)}
+                    {parsedReport.level ? ` · F${parsedReport.level}` : ''}
+                    {parsedReport.mach ? ` · ${machText(parsedReport.mach)}` : ''}
+                    {parsedReport.nextFix ? ` · next ${parsedReport.nextFix} ${fmtTime(parsedReport.nextTime)}` : ''}
+                    {parsedReport.thenFix ? ` · then ${parsedReport.thenFix}` : ''}
+                  </div>
                 )}
               </div>
               <div className="step">
-                <Phrase who="PILOT" text={`Readback correct, checking SELCAL${f.selcal ? ` ${f.selcal.slice(0, 2)}-${f.selcal.slice(2)}` : ''}, ${cs}. SELCAL check OK.`} />
+                <span className="step-label">SELCAL <b className="selcal-code">{selcal || '—'}</b></span>
                 <button disabled={!canEdit} className={us.contact?.selcal ? 'done' : ''} onClick={() => run({ type: 'selcal_ok', callsign: cs, unit: unit.id })}>
-                  SELCAL OK {us.contact?.selcal ? '✓' : ''}
+                  SELCAL check OK {us.contact?.selcal ? '✓' : ''}
                 </button>
               </div>
               <div className="step">
-                <Phrase who="ATC" text={`${cs}, roger, remain on SELCAL watch, report overhead ${us.nextReportFix ?? '…'}.`} />
+                <span className="step-label">Next report</span>
                 <select disabled={!canEdit} value={us.nextReportFix ?? ''} onChange={(e) => run({ type: 'next_report', callsign: cs, unit: unit.id, fix: e.target.value })}>
                   <option value="">next report…</option>
                   {unitFixes.map((x) => <option key={x}>{x}</option>)}
@@ -298,7 +285,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
                 Pass estimate {us.estimateOut ? `✓ ${fmtTime(us.estimateOut.at)}` : ''}
               </button>
             </div>
-            <Phrase who="ATC" text={`${cs}, position ${us.exitFix}, leaving oceanic airspace, contact ${nextUnitName(ho.to)}${ho.freq ? ` ${ho.freq}` : ''}.`} />
             <div className="step">
               <input className="w120 mono" list="neighbours" placeholder="position" value={ho.to} onChange={(e) => {
                 const v = e.target.value.toUpperCase();
@@ -336,7 +322,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
             )}
           </div>
           <ProbeResult result={probe.lvl} />
-          {lvlPhrase && <Phrase who="ATC" text={lvlPhrase} />}
         </div>
 
         <div className="clr">
@@ -356,7 +341,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
             {f.restrictions.length > 0 && canEdit && <button onClick={() => run({ type: 'clear_restrictions', callsign: cs, unit: unit.id })}>Cancel all</button>}
           </div>
           <ProbeResult result={probe.restr} />
-          {restr.time && <Phrase who="ATC" text={`${cs}, ${radio}, cross ${restr.fix} ${restr.kind === 'AT_OR_BEFORE' ? 'at or before' : restr.kind === 'AT_OR_AFTER' ? 'after' : 'at'} ${restr.time}z.`} />}
         </div>
 
         <div className="clr">
@@ -367,8 +351,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
             <button disabled={!canEdit} className="primary" onClick={() => { const c = rrCmd(); if (c) run(c); }}>Issue</button>
           </div>
           <ProbeResult result={probe.rr} />
-          <Phrase who="ATC" text={`${cs}, ${radio}, reroute due to traffic, report ready to copy.`} />
-          <Phrase who="ATC" text={`${cs}, ${radio}, recleared ${f.fpl.ades} via ${rr.trim().split(/\s+/).filter((t) => !/^[NMK]\d{3,4}/.test(t) && t !== 'DCT').slice(0, 6).join(', ')}.`} />
         </div>
 
         <div className="clr">
@@ -386,7 +368,6 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
             {f.deviation && canEdit && <button onClick={() => run({ type: 'deviation_end', callsign: cs, unit: unit.id })}>Back on track</button>}
           </div>
           <ProbeResult result={probe.wx} />
-          <p className="hint">If unable: “UNABLE (requested deviation), TRAFFIC IS (call-sign, position, level, direction), ADVISE INTENTIONS”.</p>
         </div>
 
         <div className="clr">

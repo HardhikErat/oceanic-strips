@@ -1,7 +1,7 @@
 // One fix strip, laid out like the AAI Mumbai OCC printed strip (PLAN.md §1.1).
 // Printed fields use the printer font; controller entries are drawn in blue "pen".
 import type { FixStrip, Flight } from '@oceanic/core';
-import { fmtTime, machText, penTime, type StripHighlight } from '../derive.ts';
+import { fmtSelcal, fmtTime, machText, penTime, type StripHighlight } from '../derive.ts';
 
 interface Props {
   strip: FixStrip;
@@ -102,6 +102,7 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
             <span className="tas">N{String(f.fpl.tas).padStart(4, '0')}</span>
           </div>
           <div className="box d">
+            <span className="selcal" title="SELCAL">{fmtSelcal(f.selcal) || '—'}</span>
             <span className="eq" title={`Item 10a ${f.fpl.equipment} / 10b ${f.fpl.surveillance}`}>{f.fpl.equipment.slice(0, 5)}</span>
           </div>
           <div className="box e" onDoubleClick={(e) => { e.stopPropagation(); onBox?.('E', s); }}>
