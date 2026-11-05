@@ -59,7 +59,7 @@ No oceanic clearance request from the pilot (OCM §4). The app models the unit-t
 5. **Estimate out**: pass the estimate to the next unit. The strip is marked with the time and unit.
 6. **Exit**: "Position ANGAL, leaving oceanic airspace, contact Muscat Control 128.300". Strips go to Done.
 
-A **phraseology helper** shows the exact OCM wording for each step (callsign "Mumbai Radio" / "Chennai Radio", HF 8.864 alias 128.300, "Namashkar", "Jai Hind").
+A **phraseology helper** shows the exact OCM wording for each step (callsign "Mumbai Radio" / "Chennai Radio", each unit's HF frequency with its VHF alias (e.g. Mumbai Radio HF 8879 kHz alias 132.600), "Namashkar", "Jai Hind").
 
 ---
 

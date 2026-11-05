@@ -9,6 +9,7 @@ export interface UnitConfig {
   esPositions: string[];
   frequency: string;
   hf: string;
+  hfSecondary?: string[];
   printLeadMin: number;
   coordLeadMin: number;
   passedRetentionMin: number;

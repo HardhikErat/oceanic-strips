@@ -55,7 +55,7 @@ function PositionSelect() {
           {app.units.map((u) => (
             <div key={u.id} className="pos-card">
               <h2>{u.radioName}</h2>
-              <div className="sub">{u.name} · {u.id} · {u.frequency} (HF {u.hf})</div>
+              <div className="sub">{u.name} · {u.id} · {u.frequency} (HF {[u.hf, ...(u.hfSecondary ?? [])].join(' / ')})</div>
               <div className="row">
                 <button className="primary" onClick={() => join(u.id, 'CONTROLLER')} disabled={!!taken(u.id) && taken(u.id)!.cid !== app.user?.cid}>
                   Controller{taken(u.id) ? ` (${taken(u.id)!.name})` : ''}
@@ -245,7 +245,7 @@ function Main() {
       <header className="topbar">
         <div className="unit">
           <div className="radio">{unit.radioName}</div>
-          <div className="sub">{unit.id} · {unit.frequency} · HF {unit.hf} · {app.user?.role?.toLowerCase()}</div>
+          <div className="sub">{unit.id} · {unit.frequency} · HF {[unit.hf, ...(unit.hfSecondary ?? [])].join(' / ')} · {app.user?.role?.toLowerCase()}</div>
         </div>
         <Clock />
         <div className={`alerts ${los ? 'los' : ''}`} onClick={() => setTab('conflicts')}>
@@ -259,7 +259,7 @@ function Main() {
           <span className={st?.plugins.some((p) => p.unit === unit.id) ? 'ok' : 'muted'}> · ES {st?.plugins.length ? st.plugins.map((p) => p.controller).join(',') : 'off'}</span>
           <span className="muted"> · {board.stripCount} strips · </span>
           {app.airacCurrent && app.airac && app.airac < app.airacCurrent ? (
-            <span className="bad" title={`Installed sector files are AIRAC ${app.airac}; ${app.airacCurrent} is current. Install the new VABF/VOMF/VECF files from AeroNav GNG into "Sector files/" and restart the server.`}>
+            <span className="bad" title={`Installed sector files are AIRAC ${app.airac}; ${app.airacCurrent} is current. Install the new VABF/VOMF/VECF files from AeroNav GNG into "Sector files" (any folder name) and restart the server.`}>
               AIRAC {app.airac} – {app.airacCurrent} current
             </span>
           ) : (

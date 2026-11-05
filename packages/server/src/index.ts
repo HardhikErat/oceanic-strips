@@ -20,13 +20,13 @@ const clock = new Clock();
 const db = new Db(path.join(cfg.dataDir, 'strips.db'));
 
 console.log('Reading sector files…');
-const nav = loadSectorFiles(cfg.sectorFiles, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId, esPositions: u.esPositions })), path.join(cfg.dataDir, 'nav-cache.json'));
+const nav = loadSectorFiles(cfg.sectorRoots, cfg.units.map((u) => ({ id: u.id, sectorFile: u.sectorFile, ownerId: u.ownerId, esPositions: u.esPositions })), path.join(cfg.dataDir, 'nav-cache.json'));
 for (const p of nav.problems ?? []) console.warn(`WARNING: ${p}`);
 console.log(`AIRAC ${nav.airac}: ${Object.keys(nav.nav.fixes).length} fixes, ${nav.airspaces.map((a) => `${a.id} ${a.polygons.length} sectors`).join(', ')}`);
-for (const [k, d] of Object.entries(cfg.sectorFiles)) console.log(`  ${k}: ${path.basename(d)}`);
+for (const f of nav.files ?? []) console.log(`  ${f.fir} (AIRAC ${f.airac || '?'}): ${path.relative(ROOT, f.ese)}`);
 const airacNow = currentAirac();
 if (nav.airac && nav.airac < airacNow) {
-  console.warn(`WARNING: sector files are AIRAC ${nav.airac} but AIRAC ${airacNow} is current. Download the new VABF/VOMF/VECF files from AeroNav GNG into "Sector files/".`);
+  console.warn(`WARNING: sector files are AIRAC ${nav.airac} but AIRAC ${airacNow} is current. Download the new VABF/VOMF/VECF files from AeroNav GNG into "Sector files" (any folder name works).`);
 }
 
 const store = new Store(cfg, nav, clock, db);

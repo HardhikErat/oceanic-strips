@@ -39,16 +39,20 @@ Open http://127.0.0.1:8787, log in, and pick **Mumbai Radio**, **Chennai Radio**
 For development, `npm run dev` runs the server and Vite hot reload together (open http://localhost:5173).
 
 ### Sector files
-The server reads **your own installed** VABF, VOMF and VECF sector files at start-up. Paths are set in `config/server.json` → `sectorFiles`. From those files it takes:
-- oceanic sectors (ESE first owner `BOC` Mumbai / `COC` Chennai / `KOX` Kolkata);
+The server reads **your own installed** VABF, VOMF and VECF sector files at start-up.
+
+**Where to put them:** anywhere inside the `Sector files` folder (`sectorFilesDir` in `config/server.json`). **File and folder names don't matter.** Each `.ese` is recognised by its contents: the AeroNav "File-Publisher" line, otherwise the FIR its sectors belong to. The matching `.sct` and the `NavData` folder are picked up next to it, and extra folder levels (e.g. the double folder from unzipping) are fine. `sectorFilesDir` can also be a list of folders, or point straight at your EuroScope folder.
+
+From those files the server takes:
+- oceanic sectors, owned by each unit's oceanic position (`VABF_OC_CTR`, `VOMF_OC_CTR`, `VECF_OC_CTR`; the owner ID is read from the file);
 - fixes, airways and airports;
 - neighbour positions and frequencies.
 
-The parsed cache is written to `data/local/`. That folder is git-ignored.
+The parsed cache is written to `data/local/`. That folder is git-ignored. The start-up log lists which file is used for each FIR. If a unit's file is missing, a red set-up message on the board says so.
 
-**AIRAC updates.** `config/server.json` uses `Sector files/VABF-Install_*`, `VOMF-Install_*` and `VECF-Install_*`, so the server always uses the **newest** install folder.
+**AIRAC updates.**
 1. Download the new VABF, VOMF and VECF packages from AeroNav GNG.
-2. Extract them into `Sector files/` next to the old ones.
+2. Extract them anywhere into `Sector files`, next to the old ones if you like. The newest AIRAC per FIR is used.
 3. Restart the server.
 
 The cache rebuilds automatically. The server log and the board's top bar warn in red when the installed AIRAC is older than the current one.

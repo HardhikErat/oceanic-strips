@@ -12,6 +12,7 @@ export interface UnitConfig {
   esPositions: string[];
   frequency: string;
   hf: string;
+  hfSecondary?: string[];
   sectorFile: string;
   ownerId: string;
   printLeadMin: number;
@@ -23,7 +24,8 @@ export interface ServerConfig {
   port: number;
   host: string;
   dataDir: string;
-  sectorFiles: Record<string, string>;
+  /** folders searched (recursively) for sector files; names do not matter */
+  sectorRoots: string[];
   units: UnitConfig[];
   rules: SeparationRules;
   dataSource: 'vatsim' | 'sim' | 'none';
@@ -43,20 +45,19 @@ export interface ServerConfig {
 const abs = (p: string) => (path.isAbsolute(p) ? p : path.join(ROOT, p));
 
 /**
- * Sector file folder; a trailing "*" picks the newest matching folder, so dropping a new
- * AIRAC install next to the old one is enough (AeroNav folder names sort by date).
+ * Folders to search for sector files. `sectorFilesDir` (default "Sector files") may be a
+ * string or a list. Older configs with a `sectorFiles` map of paths/globs still work: the
+ * folder part of each entry is searched.
  */
-function resolveSectorDir(p: string): string {
-  const full = abs(p);
-  if (!full.includes('*')) return full;
-  const dir = path.dirname(full);
-  const prefix = path.basename(full).replace(/\*.*$/, '');
-  if (!fs.existsSync(dir)) return full;
-  const matches = fs
-    .readdirSync(dir)
-    .filter((n) => n.startsWith(prefix) && fs.statSync(path.join(dir, n)).isDirectory())
-    .sort();
-  return matches.length ? path.join(dir, matches[matches.length - 1]) : full;
+function sectorRootsFrom(raw: { sectorFilesDir?: string | string[]; sectorFiles?: Record<string, string> }): string[] {
+  const roots = new Set<string>();
+  const dirs = raw.sectorFilesDir ?? (raw.sectorFiles ? [] : 'Sector files');
+  for (const d of Array.isArray(dirs) ? dirs : [dirs]) roots.add(abs(d));
+  for (const v of Object.values(raw.sectorFiles ?? {})) {
+    const full = abs(v);
+    roots.add(full.includes('*') ? path.dirname(full) : full);
+  }
+  return [...roots];
 }
 
 /** AIRAC cycle in force on a date (28-day cycles; 2401 became effective 25 Jan 2024). */
@@ -96,7 +97,7 @@ export function loadConfig(argv: string[]): ServerConfig {
   const cfg: ServerConfig = {
     ...raw,
     dataDir: abs(raw.dataDir ?? 'data/local'),
-    sectorFiles: Object.fromEntries(Object.entries(raw.sectorFiles as Record<string, string>).map(([k, v]) => [k, resolveSectorDir(v)])),
+    sectorRoots: sectorRootsFrom(raw),
     units,
     rules,
   };

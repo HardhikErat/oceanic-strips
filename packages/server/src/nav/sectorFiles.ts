@@ -1,4 +1,6 @@
-// Reads the controller's own installed EuroScope sector files (VABF / VOMF) at runtime.
+// Reads the controller's own installed EuroScope sector files (VABF / VOMF / VECF) at runtime.
+// Files are found anywhere under the configured folder and identified by their contents,
+// so file and folder names do not matter.
 //
 // AeroNav notice: the sector files are licensed for personal, non-commercial use and
 // must not be redistributed. This module only reads them on the controller's machine;
@@ -37,6 +39,8 @@ export interface NavIndex {
   map: { airways: { name: string; points: [number, number][] }[]; fixes: { name: string; lat: number; lon: number }[] };
   /** set-up problems to show to the controller (missing files, no oceanic sectors …) */
   problems: string[];
+  /** sector files in use, per FIR */
+  files: { fir: string; ese: string; airac: string }[];
 }
 
 export interface UnitSectorSpec {
@@ -52,23 +56,94 @@ export interface UnitSectorSpec {
 const REGION = { minLat: -45, maxLat: 42, minLon: 28, maxLon: 118 };
 const inRegion = (lat: number, lon: number) => lat >= REGION.minLat && lat <= REGION.maxLat && lon >= REGION.minLon && lon <= REGION.maxLon;
 
-function findFiles(dir: string) {
-  const out: { ese?: string; sct?: string; navDir?: string; icaoDir?: string } = {};
-  if (!fs.existsSync(dir)) return out;
-  for (const f of fs.readdirSync(dir)) {
-    const p = path.join(dir, f);
-    if (f.toLowerCase().endsWith('.ese')) out.ese = p;
-    else if (f.toLowerCase().endsWith('.sct')) out.sct = p;
-    else if (fs.statSync(p).isDirectory()) {
-      if (fs.existsSync(path.join(p, 'NavData', 'airway.txt'))) out.navDir = path.join(p, 'NavData');
-      if (fs.existsSync(path.join(p, 'ICAO', 'ICAO_Aircraft.txt'))) out.icaoDir = path.join(p, 'ICAO');
-    }
-  }
-  return out;
-}
-
 const readLatin1 = (p: string) => fs.readFileSync(p, 'latin1');
 const lines = (s: string) => s.split(/\r?\n/);
+
+export interface SectorFileSet {
+  /** FIR the file belongs to, from its contents (e.g. VABF) */
+  fir: string;
+  ese: string;
+  sct?: string;
+  navDir?: string;
+  icaoDir?: string;
+  airac: string;
+}
+
+// folders inside an AeroNav install that never hold sector or nav files
+const SKIP_DIRS = new Set(['plugins', 'asr', 'sounds', 'settings', 'alias', 'grp']);
+
+function walk(dir: string, depth: number, out: { eses: string[]; navDirs: string[]; icaoDirs: string[] }) {
+  if (depth > 6) return;
+  let entries: fs.Dirent[];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    const low = e.name.toLowerCase();
+    if (e.isDirectory()) {
+      if (low === 'navdata' && fs.existsSync(path.join(p, 'airway.txt'))) out.navDirs.push(p);
+      else if (low === 'icao' && fs.existsSync(path.join(p, 'ICAO_Aircraft.txt'))) out.icaoDirs.push(p);
+      else if (!SKIP_DIRS.has(low)) walk(p, depth + 1, out);
+    } else if (low.endsWith('.ese')) out.eses.push(p);
+  }
+}
+
+/**
+ * FIR a sector file belongs to, read from its contents so file and folder names do not
+ * matter: the AeroNav "File-Publisher: Mumbai - VABF" line, else the FIR prefix used by
+ * most of its SECTOR definitions.
+ */
+export function eseHomeFir(text: string): string | undefined {
+  const pub = /File-Publisher:[^\n]*?-\s*([A-Z]{4})\b/.exec(text);
+  if (pub) return pub[1];
+  const counts = new Map<string, number>();
+  for (const m of text.matchAll(/^SECTOR:([A-Z]{4})\u00B7/gm)) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+  let best: string | undefined;
+  let n = 0;
+  for (const [k, v] of counts) if (v > n) { best = k; n = v; }
+  return best;
+}
+
+const isUnder = (child: string, parent: string) => {
+  const r = path.relative(parent, child);
+  return !!r && !r.startsWith('..') && !path.isAbsolute(r);
+};
+
+/** Find sector files anywhere below the given folders, grouped by FIR (newest AIRAC wins). */
+export function discoverSectorFiles(roots: string[]): { byFir: Record<string, SectorFileSet>; all: SectorFileSet[] } {
+  const found = { eses: [] as string[], navDirs: [] as string[], icaoDirs: [] as string[] };
+  for (const r of roots) if (fs.existsSync(r)) walk(r, 0, found);
+  const all: SectorFileSet[] = [];
+  for (const ese of found.eses) {
+    let text: string;
+    try { text = fs.readFileSync(ese, 'latin1'); } catch { continue; }
+    const fir = eseHomeFir(text);
+    if (!fir) continue;
+    const dir = path.dirname(ese);
+    const base = path.basename(ese, path.extname(ese));
+    const scts = fs.readdirSync(dir).filter((f) => f.toLowerCase().endsWith('.sct'));
+    const sct = scts.find((f) => path.basename(f, path.extname(f)) === base) ?? scts[0];
+    const nearest = (list: string[]) => list.filter((d) => isUnder(d, dir)).sort((a, b) => a.length - b.length)[0];
+    all.push({
+      fir,
+      ese,
+      sct: sct ? path.join(dir, sct) : undefined,
+      navDir: nearest(found.navDirs),
+      icaoDir: nearest(found.icaoDirs),
+      airac: /AIRAC\s+(\d{4})/.exec(text)?.[1] ?? '',
+    });
+  }
+  const byFir: Record<string, SectorFileSet> = {};
+  for (const f of all) {
+    const cur = byFir[f.fir];
+    if (!cur || f.airac > cur.airac || (f.airac === cur.airac && fs.statSync(f.ese).mtimeMs > fs.statSync(cur.ese).mtimeMs)) byFir[f.fir] = f;
+  }
+  // fall back to any NavData / ICAO folder found if a file has none of its own
+  for (const f of Object.values(byFir)) {
+    f.navDir ??= found.navDirs[0];
+    f.icaoDir ??= found.icaoDirs[0];
+  }
+  return { byFir, all };
+}
 
 function parseEse(text: string, file: string) {
   const positions: EsPosition[] = [];
@@ -237,8 +312,8 @@ function sctFixes(sct: string, nav: NavData) {
   }
 }
 
-export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorSpec[], cacheFile: string): NavIndex {
-  const found = Object.fromEntries(Object.entries(dirs).map(([k, d]) => [k, findFiles(d)]));
+export function loadSectorFiles(roots: string[], units: UnitSectorSpec[], cacheFile: string): NavIndex {
+  const found = discoverSectorFiles(roots).byFir;
   const stamp = JSON.stringify(
     Object.values(found).flatMap((f) => [f.ese, f.sct, f.navDir && path.join(f.navDir, 'airway.txt')].filter(Boolean).map((p) => `${p}:${fs.statSync(p!).mtimeMs}`)),
   ) + JSON.stringify(units);
@@ -254,21 +329,24 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
   const positions: Record<string, EsPosition> = {};
   const positionsById: Record<string, EsPosition> = {};
   const mapAirways = new Map<string, Set<string>>();
-  let airac = '';
   let navLoaded = false;
   const sectorsByFile: Record<string, EsSector[]> = {};
   const positionsByFile: Record<string, EsPosition[]> = {};
   const problems: string[] = [];
-  for (const [key, f] of Object.entries(found)) {
-    if (!f.ese) problems.push(`${key}: no .ese file found in "${dirs[key]}". Put the AeroNav ${key} install folder (with the .ese/.sct directly inside) in "Sector files".`);
-    else if (!f.navDir) problems.push(`${key}: NavData folder not found next to the .ese file – airways and fixes may be incomplete.`);
+  const where = roots.map((r) => `"${r}"`).join(', ');
+  for (const u of units) {
+    const f = found[u.sectorFile];
+    if (!f) problems.push(`${u.id}: no ${u.sectorFile} sector file (.ese) found under ${where}. Put the AeroNav ${u.sectorFile} install there – any folder name works.`);
+    else if (!f.navDir) problems.push(`${u.sectorFile}: NavData folder not found – airways and fixes may be incomplete.`);
   }
+  // the AIRAC shown is the oldest of the files the units use, so an outdated one is noticed
+  const unitAiracs = [...new Set(units.map((u) => found[u.sectorFile]?.airac).filter(Boolean) as string[])].sort();
+  const airac = unitAiracs[0] ?? '';
+  if (unitAiracs.length > 1) problems.push(`Sector files are from different AIRACs (${unitAiracs.join(', ')}). Update them all to the same cycle.`);
 
   for (const [key, f] of Object.entries(found)) {
     if (f.ese) {
       const eseText = readLatin1(f.ese);
-      const m = /AIRAC\s+(\d{4})/.exec(eseText);
-      if (m) airac = m[1];
       const { positions: pos, sectors: sec } = parseEse(eseText, key);
       for (const p of pos) {
         positions[p.callsign] ??= p;
@@ -327,7 +405,8 @@ export function loadSectorFiles(dirs: Record<string, string>, units: UnitSectorS
     if (p && !/^\d/.test(n)) mapOut.fixes.push({ name: n, lat: p.lat, lon: p.lon });
   }
 
-  const index: NavIndex = { nav, airspaces, sectors, positions, positionsById, airac, map: mapOut, problems };
+  const files = Object.values(found).map((f) => ({ fir: f.fir, ese: f.ese, airac: f.airac }));
+  const index: NavIndex = { nav, airspaces, sectors, positions, positionsById, airac, map: mapOut, problems, files };
   fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
   fs.writeFileSync(cacheFile, JSON.stringify({ stamp, index }));
   return index;

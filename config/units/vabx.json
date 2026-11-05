@@ -2,9 +2,15 @@
   "id": "VABX",
   "name": "Mumbai Oceanic",
   "radioName": "Mumbai Radio",
-  "esPositions": ["VABF_OC_CTR"],
+  "esPositions": [
+    "VABF_OC_CTR"
+  ],
   "frequency": "132.600",
-  "hf": "8.864",
+  "hf": "8.879",
+  "hfSecondary": [
+    "10.018"
+  ],
+  "_hf": "Mumbai Radio HF: 8879 kHz (MWARA INO-1), 10018 kHz (MID-2). From MWARA listings; confirm with India vACC / current India AIP ENR 2.1. On VATSIM pilots use the VHF alias in \"frequency\".",
   "sectorFile": "VABF",
   "ownerId": "BOC",
   "printLeadMin": 40,

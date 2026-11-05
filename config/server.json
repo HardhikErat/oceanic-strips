@@ -2,12 +2,13 @@
   "port": 8787,
   "host": "127.0.0.1",
   "dataDir": "data/local",
-  "sectorFiles": {
-    "VABF": "Sector files/VABF-Install_*",
-    "VOMF": "Sector files/VOMF-Install_*",
-    "VECF": "Sector files/VECF-Install_*"
-  },
-  "units": ["config/units/vabx.json", "config/units/vomx.json", "config/units/vecx.json"],
+  "_sectorFilesDir": "Folder searched for the VABF / VOMF / VECF sector files. Any sub-folder or file names work; each .ese is recognised from its contents and the newest AIRAC per FIR is used.",
+  "sectorFilesDir": "Sector files",
+  "units": [
+    "config/units/vabx.json",
+    "config/units/vomx.json",
+    "config/units/vecx.json"
+  ],
   "rules": "config/rules.json",
   "dataSource": "vatsim",
   "vatsimFeedUrl": "https://data.vatsim.net/v3/vatsim-data.json",
