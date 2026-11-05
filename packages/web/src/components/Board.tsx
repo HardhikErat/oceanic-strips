@@ -118,7 +118,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
               return (
                 <div key={bay.fix} className={`bay ${bayHl ? 'bay-alert' : ''}`}>
                   <div className="designator">
-                    <span>{bay.fix}</span>
+                    <span className={bay.fix.length > 5 ? 'long' : ''}>{bay.fix}</span>
                     <span className="bay-n">{bay.strips.filter((s) => s.state !== 'PASSED').length}</span>
                   </div>
                   {bay.strips.map((s) => {

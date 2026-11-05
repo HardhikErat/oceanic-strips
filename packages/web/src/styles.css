@@ -158,6 +158,9 @@ a { color: var(--accent); cursor: pointer; }
 .box:last-child { border-right: none; }
 .box .fix { display: block; font-weight: 700; font-size: 1.25em; letter-spacing: 0.5px; }
 .box .fix.sm { font-size: 1.05em; }
+/* coordinate names of boundary crossings (e.g. 0630N09305E) */
+.box .fix.long { font-size: 0.9em; letter-spacing: 0; }
+.designator .long { letter-spacing: 1px; }
 .tcell { display: flex; gap: 0.3em; align-items: baseline; font-size: 1.2em; white-space: nowrap; }
 .printed.struck { text-decoration: line-through; text-decoration-color: var(--pen); text-decoration-thickness: 1.5px; opacity: 0.8; }
 .pen { font-family: var(--hand); color: var(--pen); font-weight: 700; font-size: 1.55em; line-height: 0.9; }

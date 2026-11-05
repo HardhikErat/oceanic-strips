@@ -2,12 +2,12 @@
 // command reducer used by the server (authoritative) and the web board (what-if).
 import type { Command } from './commands.ts';
 import { computeTrajectory, formatHHMM, locateOnRoute, type TimedPoint, type TrajectoryOptions } from './estimates.ts';
-import { classifyCategory, expandRoute, parseAircraftField, parseItem18, typeOfFlight, type NavData } from './fpl.ts';
+import { classifyCategory, expandRoute, parseAircraftField, parseItem18, typeOfFlight, withDistances, type NavData } from './fpl.ts';
 import { distanceNm, interpolate, type LatLon } from './geo.ts';
 import type { CoordEntry, DataSource, Flight, FlightPlan, LivePosition, RoutePoint, UnitState } from './model.ts';
 import type { ProbeFlight } from './probe.ts';
 import type { SeparationRules } from './rules.ts';
-import { stripIndicesForAirspace, type UnitAirspace } from './strips.ts';
+import { addBoundaryPoints, stripIndicesForAirspace, type UnitAirspace } from './strips.ts';
 
 const MIN = 60_000;
 
@@ -69,7 +69,8 @@ export function normaliseFpl(raw: RawFlightPlan, nav: NavData): FlightPlan {
 }
 
 export function createFlight(fpl: FlightPlan, ctx: FlightContext, now: number, source: DataSource): Flight {
-  const { points, unresolved } = expandRoute(fpl.route, fpl.adep, fpl.ades, ctx.nav);
+  const { points: raw, unresolved } = expandRoute(fpl.route, fpl.adep, fpl.ades, ctx.nav);
+  const points = withDistances(addBoundaryPoints(raw, ctx.airspaces));
   const i18 = parseItem18(fpl.item18);
   const cat = classifyCategory(fpl.surveillance, ctx.rules.adsbSurveillanceCodes);
   return {
@@ -117,24 +118,24 @@ export function amendFlightPlan(f: Flight, fpl: FlightPlan, ctx: FlightContext, 
 /** Replace the route with routes from EuroScope (already resolved points). */
 export function setResolvedRoute(f: Flight, points: { name: string; lat: number; lon: number }[], ctx: FlightContext, now: number) {
   const key = points.map((p) => p.name).join(' ');
-  const cur = f.route.map((p) => p.name).join(' ');
+  const cur = f.route.filter((p) => !p.boundary).map((p) => p.name).join(' ');
   if (key === cur) return false;
   const { points: expanded } = expandRoute(f.fpl.route, f.fpl.adep, f.fpl.ades, ctx.nav);
   // keep speed/level groups and airway labels from our own expansion where names match
   const byName = new Map(expanded.map((p) => [p.name, p]));
-  let d = 0;
-  f.route = points.map((p, i) => {
-    if (i > 0) d += distanceNm(points[i - 1], p);
+  const resolved = points.map((p) => {
     const e = byName.get(p.name);
-    return { name: p.name, lat: p.lat, lon: p.lon, distNm: d, airway: e?.airway, speed: e?.speed, levelFl: e?.levelFl, isAirport: p.name === f.fpl.adep || p.name === f.fpl.ades };
+    return { name: p.name, lat: p.lat, lon: p.lon, airway: e?.airway, speed: e?.speed, levelFl: e?.levelFl, isAirport: p.name === f.fpl.adep || p.name === f.fpl.ades };
   });
+  f.route = withDistances(addBoundaryPoints(resolved, ctx.airspaces));
   f.unresolved = [];
   reindexUnits(f, ctx, now);
   return true;
 }
 
 function setRoute(f: Flight, route: string, ctx: FlightContext, now: number) {
-  const { points, unresolved } = expandRoute(route, f.fpl.adep, f.fpl.ades, ctx.nav);
+  const { points: raw, unresolved } = expandRoute(route, f.fpl.adep, f.fpl.ades, ctx.nav);
+  const points = withDistances(addBoundaryPoints(raw, ctx.airspaces));
   f.route = points;
   f.unresolved = unresolved;
   // drop data for fixes no longer on route

@@ -22,6 +22,8 @@ import {
   toProbeFlight,
   updateLive,
   expandRoute,
+  addBoundaryPoints,
+  withDistances,
   type Command,
   type Conflict,
   type CoordEntry,
@@ -152,7 +154,8 @@ export class Store extends EventEmitter {
     let rel = false;
     if (quick) {
       const r = expandRoute(raw.route, raw.adep, raw.ades, nav);
-      rel = this.navIndex.airspaces.some((a) => stripIndicesForAirspace(r.points, a).length > 0);
+      const pts = withDistances(addBoundaryPoints(r.points, this.navIndex.airspaces));
+      rel = this.navIndex.airspaces.some((a) => stripIndicesForAirspace(pts, a).length > 0);
     }
     this.relevanceCache.set(key, rel);
     if (this.relevanceCache.size > 20000) this.relevanceCache.clear();

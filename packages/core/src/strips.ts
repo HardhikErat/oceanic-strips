@@ -1,6 +1,6 @@
 // Fix-posting strips: one strip per reporting point inside a unit's oceanic airspace,
 // as printed at AAI Mumbai OCC (see PLAN.md §1.1).
-import { bearingDeg, distanceToPolygonEdgeNm, pointInPolygon, type LatLon } from './geo.ts';
+import { bearingDeg, distanceNm, distanceToPolygonEdgeNm, lineIntersection, pointInPolygon, type LatLon } from './geo.ts';
 import type { TimedPoint } from './estimates.ts';
 import type { Flight, RoutePoint, StripMarks, UnitState } from './model.ts';
 
@@ -22,6 +22,62 @@ export function nearAirspaceEdge(p: LatLon, a: UnitAirspace, tolNm: number): boo
  * point (TCP) just outside within `tolNm` of the boundary on entry or exit.
  * Airports are excluded.
  */
+/** ICAO Item 15 style coordinate name, e.g. 0630N09305E (degrees + minutes). */
+export function icaoLatLonName(p: LatLon): string {
+  const part = (v: number, degDigits: number, pos: string, neg: string) => {
+    const a = Math.abs(v);
+    let d = Math.floor(a);
+    let m = Math.round((a - d) * 60);
+    if (m === 60) { d += 1; m = 0; }
+    return `${String(d).padStart(degDigits, '0')}${String(m).padStart(2, '0')}${v < 0 ? neg : pos}`;
+  };
+  return part(p.lat, 2, 'N', 'S') + part(p.lon, 3, 'E', 'W');
+}
+
+/**
+ * Add a point wherever the route crosses the boundary of an oceanic airspace between two
+ * route points. Direct (DCT) legs across the ocean otherwise have no point inside the
+ * airspace, so the flight would get no strips, or would look as if it had already left.
+ * Lines between a unit's own sectors are ignored (only real in/out changes count).
+ */
+export function addBoundaryPoints<T extends LatLon & { name: string; airway?: string; isAirport?: boolean; boundary?: boolean }>(
+  points: T[],
+  airspaces: UnitAirspace[],
+): (T | (LatLon & { name: string; airway?: string; isCoordinate: true; boundary: true }))[] {
+  const src = points.filter((p) => !p.boundary);
+  const out: (T | (LatLon & { name: string; airway?: string; isCoordinate: true; boundary: true }))[] = [];
+  src.forEach((b, i) => {
+    if (i > 0) {
+      const a = src[i - 1];
+      const A = { x: a.lon, y: a.lat }, B = { x: b.lon, y: b.lat };
+      const at = (t: number): LatLon => ({ lat: a.lat + (b.lat - a.lat) * t, lon: a.lon + (b.lon - a.lon) * t });
+      const ts: number[] = [];
+      for (const air of airspaces) {
+        for (const poly of air.polygons) {
+          for (let k = 0; k < poly.length; k++) {
+            const p1 = poly[k], p2 = poly[(k + 1) % poly.length];
+            const ix = lineIntersection(A, B, { x: p1.lon, y: p1.lat }, { x: p2.lon, y: p2.lat });
+            if (!ix || ix.t <= 0 || ix.t >= 1 || ix.u < 0 || ix.u > 1) continue;
+            const eps = Math.min(0.002, ix.t / 2, (1 - ix.t) / 2);
+            if (inAirspace(at(ix.t - eps), air) !== inAirspace(at(ix.t + eps), air)) ts.push(ix.t);
+          }
+        }
+      }
+      ts.sort((x, y) => x - y);
+      let last: LatLon = a;
+      for (const t of ts) {
+        const p = at(t);
+        // a route point already on (or next to) the boundary covers it
+        if (distanceNm(p, a) < 3 || distanceNm(p, b) < 3 || distanceNm(p, last) < 1) continue;
+        out.push({ name: icaoLatLonName(p), lat: p.lat, lon: p.lon, airway: b.airway, isCoordinate: true, boundary: true });
+        last = p;
+      }
+    }
+    out.push(b);
+  });
+  return out;
+}
+
 export function stripIndicesForAirspace(route: RoutePoint[], a: UnitAirspace, tolNm = 3): number[] {
   const inside = route.map((p) => !p.isAirport && inAirspace(p, a));
   const idx = new Set<number>();

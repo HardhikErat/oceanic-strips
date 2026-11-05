@@ -48,6 +48,8 @@ export interface RoutePoint extends LatLon {
   levelFl?: number;
   isAirport?: boolean;
   isCoordinate?: boolean;
+  /** boundary crossing added where a route enters/leaves Indian oceanic airspace between two points */
+  boundary?: boolean;
   /** Cumulative great-circle distance from route start, NM */
   distNm: number;
 }

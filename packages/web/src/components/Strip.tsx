@@ -60,7 +60,7 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
       <div className="paper">
         <div className="row1">
           <div className="box a" onDoubleClick={(e) => { e.stopPropagation(); onBox?.('A', s); }} title="Double-click: report / revise estimate">
-            <span className="fix">{s.fix}</span>
+            <span className={`fix ${s.fix.length > 5 ? 'long' : ''}`}>{s.fix}</span>
             <TimeCell printed={s.printedEto} current={s.eto} ato={s.ato} />
             {s.overdue && <span className="overdue">OVERDUE</span>}
             {nextReport && !s.overdue && <span className="pen nr" title="Next report required">R</span>}
@@ -107,7 +107,7 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
           <div className="box e" onDoubleClick={(e) => { e.stopPropagation(); onBox?.('E', s); }}>
             {s.next && (
               <>
-                <span className="fix sm">{s.next.fix}</span>
+                <span className={`fix sm ${s.next.fix.length > 5 ? 'long' : ''}`}>{s.next.fix}</span>
                 <TimeCell printed={printed?.[s.next.fix]} current={s.next.eto} ato={s.next.ato} />
               </>
             )}
@@ -123,7 +123,7 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
           <div className="box f">
             {s.prev && (
               <>
-                <span className="fix sm">{s.prev.fix}</span>
+                <span className={`fix sm ${s.prev.fix.length > 5 ? 'long' : ''}`}>{s.prev.fix}</span>
                 <TimeCell printed={printed?.[s.prev.fix]} current={s.prev.eto} ato={s.prev.ato} />
               </>
             )}

@@ -13,6 +13,8 @@ import {
   toProbeFlight,
   machToTasKt,
   printUnit,
+  addBoundaryPoints,
+  withDistances,
   type Flight,
   type FlightContext,
   type NavData,
@@ -148,6 +150,36 @@ describe('estimates', () => {
   });
 });
 
+describe('boundary crossing points for direct routes', () => {
+  // Chennai-like airspace 61E-67E; the route AAA60 DCT AAA68 has no point inside it
+  const box = (w: number, e: number) => [{ lat: 10, lon: w }, { lat: 20, lon: w }, { lat: 20, lon: e }, { lat: 10, lon: e }];
+  const r = expandRoute('AAA60 DCT AAA68', 'XXXX', 'YYYY', nav).points;
+
+  it('adds entry and exit points named by coordinates', () => {
+    const pts = withDistances(addBoundaryPoints(r, [{ id: 'VOMX', polygons: [box(61, 67)] }]));
+    expect(pts.map((p) => p.name)).toEqual(['AAA60', '1500N06100E', '1500N06700E', 'AAA68']);
+    const idx = stripIndicesForAirspace(pts, { id: 'VOMX', polygons: [box(61, 67)] });
+    expect(idx.map((i) => pts[i].name)).toEqual(['1500N06100E', '1500N06700E']);
+  });
+  it('ignores the line between two sectors of the same unit', () => {
+    const pts = addBoundaryPoints(r, [{ id: 'VOMX', polygons: [box(61, 64), box(64, 67)] }]);
+    expect(pts.map((p) => p.name)).toEqual(['AAA60', '1500N06100E', '1500N06700E', 'AAA68']);
+  });
+  it('adds nothing when a route point already sits on the boundary', () => {
+    const pts = addBoundaryPoints(expandRoute('AAA60 W1 AAA68', 'XXXX', 'YYYY', nav).points, [{ id: 'VOMX', polygons: [box(62, 66)] }]);
+    expect(pts.some((p) => 'boundary' in p && p.boundary)).toBe(false);
+  });
+  it('keeps a flight on the board until it reaches the exit point', () => {
+    const f = createFlight(
+      normaliseFpl({ callsign: 'IGO1', aircraft: 'A20N/M-SDE1/L', adep: 'XXXX', ades: 'YYYY', route: 'AAA60 DCT AAA68', cruiseLevel: 350, tas: 450, remarks: '' }, nav),
+      { ...ctx, airspaces: [{ id: 'VOMX', polygons: [box(61, 67)] }] },
+      T0,
+      'MANUAL',
+    );
+    expect(f.route.map((p) => p.name)).toContain('1500N06700E');
+  });
+});
+
 describe('conflicts beyond Indian oceanic airspace', () => {
   // VABX ends at 62.5E in this test; everything east of it is a neighbouring FIR
   const unitsAt = (p: { lon: number }) => (p.lon < 62.5 ? ['VABX'] : []);
@@ -186,7 +218,8 @@ describe('unit hand-over', () => {
     const f = createFlight(normaliseFpl({ callsign: 'IGO53', aircraft: 'A21N/M-SDE1/L', adep: 'XXXX', ades: 'YYYY', route: 'AAA60 W1 AAA68', cruiseLevel: 350, tas: 450, remarks: '' }, nav), two, T0, 'MANUAL');
     f.estimates['AAA60'] = { time: T0, source: 'COORD', at: T0 };
     const vecx = printUnit(f, 'VECX', two, T0)!;
-    expect(vecx.pointIndices.map((i) => f.route[i].name)).toEqual(['AAA60', 'AAA62']);
+    // the route leaves at 62.5E between AAA62 and AAA64: that crossing is the exit point
+    expect(vecx.pointIndices.map((i) => f.route[i].name)).toEqual(['AAA60', 'AAA62', '1500N06230E']);
     expect(vecx.nextUnit).toBe('VYYF_4_CTR'); // AAA64 is in the gap: foreign FIR next
     const vomx = printUnit(f, 'VOMX', two, T0)!;
     expect(vomx.prevUnit).toBe('VYYF_4_CTR');
