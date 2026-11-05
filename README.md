@@ -19,7 +19,7 @@ npm install
 npm run build
 ```
 
-**Training:** a simulator flies the scenario traffic and makes the HF calls.
+**Training:** a simulator flies the scenario traffic.
 
 ```bash
 npm run sim
@@ -66,7 +66,7 @@ The cache rebuilds automatically. The server log and the board's top bar warn in
 | **Fix bays** | One bay per reporting point, each with a black designator header. Bays are grouped in columns by ATS route and strips are sorted by estimate. This is how conflicts are found by scanning strips. |
 | **Coordination** | The exit strip moves here when the exit estimate is within 30 min (`coordLeadMin`) and has not been passed. **EST OUT** passes it. |
 | **Done** | Flights that have been handed off. Click one to recall it. |
-| **Side panel** | Conflicts · HF inbox (simulated pilot calls) · coordination log · map · audit log · help. |
+| **Side panel** | Conflicts · coordination log · map · audit log · help. |
 | **Command line** | Press `/` to focus it, e.g. `QTR8E R KITAL 0053 F350 M083 BOLUR 0123 DONSA`. Type `HELP` for the list. |
 
 **The strip** copies the Mumbai OCC paper strip.

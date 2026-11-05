@@ -59,7 +59,7 @@ No oceanic clearance request from the pilot (OCM §4). The app models the unit-t
 5. **Estimate out**: pass the estimate to the next unit. The strip is marked with the time and unit.
 6. **Exit**: "Position ANGAL, leaving oceanic airspace, contact Muscat Control 128.300". Strips go to Done.
 
-A **phraseology helper** shows the exact OCM wording for each step (callsign "Mumbai Radio" / "Chennai Radio", each unit's HF frequency with its VHF alias (e.g. Mumbai Radio HF 8879 kHz alias 132.600), "Namashkar", "Jai Hind").
+The flight panel lists the OCM steps as actions only; no phraseology text is shown.
 
 ---
 
@@ -141,7 +141,7 @@ For every pair of active flights (n is small, so O(n²) is fine), recomputed on 
 ### 3.3 Web app (React + Vite + TS, dnd-kit, Zustand)
 - Strip component drawn on a CSS grid to the real dimensions; printed font plus a handwriting font for pen entries; blue ink; strike-through history.
 - Drag strips between bays; keyboard-first entry (`/r QTR8E GIRNA 1715 F350 M080 ELSAR 1755 DUBTA`).
-- Large UTC clock, conflict panel, phraseology helper, pending printer animation.
+- Large UTC clock, conflict panel, pending printer animation.
 - Responsive enough for a second monitor or tablet as a "strip bay".
 
 ### 3.4 Repository layout

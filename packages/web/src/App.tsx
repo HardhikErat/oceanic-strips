@@ -3,7 +3,7 @@ import { COMMAND_HELP, parseCommandLine, parseHHMM, parsePositionReport, type Fi
 import { Board } from './components/Board.tsx';
 import { FlightPanel } from './components/FlightPanel.tsx';
 import { Modal, type Field } from './components/Modal.tsx';
-import { AuditLog, ConflictList, CoordLog, RadioInbox } from './components/SidePanels.tsx';
+import { AuditLog, ConflictList, CoordLog } from './components/SidePanels.tsx';
 import { SituationDisplay } from './components/SituationDisplay.tsx';
 import { buildBoard, fmtTime, trajectoryOf } from './derive.ts';
 import { client, unitById, useApp, useNow, type User } from './state.ts';
@@ -86,7 +86,7 @@ function Clock() {
   );
 }
 
-type Tab = 'conflicts' | 'radio' | 'coord' | 'map' | 'log' | 'help';
+type Tab = 'conflicts' | 'coord' | 'map' | 'log' | 'help';
 
 export function App() {
   const app = useApp();
@@ -116,7 +116,6 @@ function Main() {
   const myConflicts = app.conflicts.filter((c) => c.units.includes(unit.id));
   const los = myConflicts.filter((c) => c.severity === 'LOS' && !c.acknowledged).length;
   const warn = myConflicts.filter((c) => c.severity !== 'LOS').length;
-  const unhandledRadio = app.radio.filter((r) => r.unit === unit.id && !r.handled).length;
   const flight = selected ? app.flights.get(selected.cs) : undefined;
 
   useEffect(() => { localStorageSet('strip-zoom', String(zoom)); }, [zoom]);
@@ -326,7 +325,6 @@ function Main() {
         <aside className="side">
           <nav className="tabs">
             <button className={tab === 'conflicts' ? 'on' : ''} onClick={() => setTab('conflicts')}>Conflicts {myConflicts.length ? <b className={los ? 'b-los' : 'b-warn'}>{myConflicts.length}</b> : null}</button>
-            <button className={tab === 'radio' ? 'on' : ''} onClick={() => setTab('radio')}>HF {unhandledRadio ? <b className="b-radio">{unhandledRadio}</b> : null}</button>
             <button className={tab === 'coord' ? 'on' : ''} onClick={() => setTab('coord')}>Coord</button>
             <button className={tab === 'map' ? 'on' : ''} onClick={() => setTab('map')}>Map</button>
             <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>Log</button>
@@ -334,7 +332,6 @@ function Main() {
           </nav>
           <div className="tab-body">
             {tab === 'conflicts' && <ConflictList conflicts={app.conflicts} unit={unit} canAck={canEdit} onSelect={(cs) => setSelected({ cs })} />}
-            {tab === 'radio' && <RadioInbox radio={app.radio} unit={unit} canEdit={canEdit} onSelect={(cs) => setSelected({ cs })} />}
             {tab === 'coord' && <CoordLog coord={app.coord} unit={unit} />}
             {tab === 'map' && <SituationDisplay app={app} unit={unit} now={now} selected={selected?.cs} conflicts={app.conflicts} onSelect={(cs) => setSelected({ cs })} />}
             {tab === 'log' && <AuditLog />}

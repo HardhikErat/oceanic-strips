@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { CoordEntry, RadioMessage } from '@oceanic/core';
+import type { CoordEntry } from '@oceanic/core';
 import { fmtTime } from '../derive.ts';
 import { client, type BoardConflict, type UnitConfig } from '../state.ts';
 
@@ -47,44 +47,6 @@ export function ConflictList({ conflicts, unit, onSelect, canAck }: { conflicts:
           <div className="beyond">{beyond.map(row)}</div>
         </>
       )}
-    </div>
-  );
-}
-
-export function RadioInbox({ radio, unit, canEdit, onSelect }: { radio: RadioMessage[]; unit: UnitConfig; canEdit: boolean; onSelect: (cs: string) => void }) {
-  const list = radio.filter((r) => r.unit === unit.id).slice().reverse();
-  const [err, setErr] = useState('');
-  const copy = async (m: RadioMessage) => {
-    try {
-      if (m.report) await client.command({ type: 'report', callsign: m.callsign, unit: unit.id, ...m.report, raw: m.text });
-      else if (m.kind === 'FIRST_CONTACT') await client.command({ type: 'first_contact', callsign: m.callsign, unit: unit.id });
-      else if (m.kind === 'REACHING') await client.command({ type: 'level_reached', callsign: m.callsign, unit: unit.id });
-      await client.command({ type: 'radio_handled', id: m.id, unit: unit.id, callsign: m.callsign });
-      setErr('');
-    } catch (e) {
-      setErr((e as Error).message);
-    }
-  };
-  return (
-    <div className="panel-list">
-      <div className="hint">HF {unit.hf} (alias {unit.frequency}). Simulated pilot calls appear here in training; on VATSIM, type reports in the command line.</div>
-      {err && <div className="fp-err">{err}</div>}
-      {list.length === 0 && <div className="empty">No calls</div>}
-      {list.map((m) => (
-        <div key={m.id} className={`radio-row ${m.handled ? 'handled' : ''} k-${m.kind.toLowerCase()}`}>
-          <div className="rr-head">
-            <span className="t">{fmtTime(m.at)}</span>
-            <a onClick={() => onSelect(m.callsign)}>{m.callsign}</a>
-            <span className="kind">{m.kind.replace('_', ' ')}</span>
-          </div>
-          <div className="rr-text">{m.text}</div>
-          {canEdit && !m.handled && (
-            <button className="mini primary" onClick={() => copy(m)}>
-              {m.report ? 'Copy onto strips' : m.kind === 'REACHING' ? 'Level ✓' : 'Acknowledge'}
-            </button>
-          )}
-        </div>
-      ))}
     </div>
   );
 }
