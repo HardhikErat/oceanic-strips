@@ -177,6 +177,13 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
           </h3>
           {us.estimateIn && <p className="hint">Estimate in: {us.estimateIn.fix} {fmtTime(us.estimateIn.time)} from {us.estimateIn.from || '—'}</p>}
 
+          {us.phase === 'ACTIVE' && canEdit && (
+            <div className="row">
+              <button onClick={() => run({ type: 'unpost', callsign: cs, unit: unit.id })} title="Posted by mistake? Put the strips back in Printer / Pending (marks and times are kept)">
+                ↩ Back to Pending
+              </button>
+            </div>
+          )}
           {us.phase === 'PENDING' && canEdit && (
             <div className="row">
               <button onClick={() => run({ type: 'activate', callsign: cs, unit: unit.id })}>Post strips</button>

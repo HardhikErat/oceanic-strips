@@ -127,6 +127,12 @@ a { color: var(--accent); cursor: pointer; }
 .fix-board { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; align-content: flex-start; min-height: 0; padding-bottom: 8px; }
 .route-col { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; width: min(calc(654px * var(--zoom)), 100%); min-width: 0; }
 .bay .strip { width: 100%; }
+.strip-wrap { position: relative; }
+.strip-wrap .unpost {
+  position: absolute; right: 2px; top: -9px; z-index: 3; padding: 0 6px; font-size: 12px; line-height: 16px;
+  background: #1d2329; border-color: #4a5560; opacity: 0; transition: opacity 0.15s;
+}
+.strip-wrap:hover .unpost { opacity: 1; }
 .route-head {
   font-family: var(--printer); font-weight: 700; color: #fff; background: #0b0e10; padding: 2px 8px; border-radius: 3px; letter-spacing: 2px; width: max-content;
 }

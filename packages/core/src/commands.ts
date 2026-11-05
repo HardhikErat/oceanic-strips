@@ -26,6 +26,7 @@ export type Command =
   | { type: 'mark'; callsign: string; unit: string; fix: string; symbol: string; on: boolean }
   | { type: 'free_text'; callsign: string; unit: string; fix: string; text: string }
   | { type: 'activate'; callsign: string; unit: string }
+  | { type: 'unpost'; callsign: string; unit: string }
   | { type: 'print'; callsign: string; unit: string }
   | { type: 'remove'; callsign: string; unit: string }
   | { type: 'restore'; callsign: string; unit: string }
@@ -199,7 +200,11 @@ export function parseCommandLine(line: string, unit: string, now: number, routeF
       return { type: 'set_category', callsign, unit, category: c };
     }
     case 'ACT':
+    case 'POST':
       return { type: 'activate', callsign, unit };
+    case 'UNPOST':
+    case 'PEND':
+      return { type: 'unpost', callsign, unit };
     case 'DEL':
       return { type: 'remove', callsign, unit };
     default:
@@ -224,5 +229,6 @@ export const COMMAND_HELP: [string, string][] = [
   ['<CS> WX 20 R', 'Weather deviation up to 20 NM right (WX OFF to end)'],
   ['<CS> EMERG', 'Mark emergency (EMERG OFF to clear)'],
   ['<CS> CAT ADSB', 'Override ADS-B / OTHER category (AUTO to reset)'],
+  ['<CS> POST  /  <CS> UNPOST', 'Post strips on the board / take them back to Pending'],
   ['<CS> HO OOMM_1_CTR 128.150', 'Hand off / leaving oceanic airspace'],
 ];

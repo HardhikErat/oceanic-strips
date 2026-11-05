@@ -123,7 +123,24 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
                   </div>
                   {bay.strips.map((s) => {
                     const f = findFlight(s.callsign);
-                    return f ? strip(s, f) : null;
+                    if (!f) return null;
+                    return (
+                      <div key={s.key} className="strip-wrap">
+                        {strip(s, f)}
+                        {canEdit && (
+                          <button
+                            className="unpost"
+                            title={`Back to Pending – take all ${f.callsign} strips off the board`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              client.command({ type: 'unpost', callsign: f.callsign, unit: unit.id }).catch((err) => alert(err.message));
+                            }}
+                          >
+                            ↩
+                          </button>
+                        )}
+                      </div>
+                    );
                   })}
                 </div>
               );

@@ -471,6 +471,15 @@ export function applyCommand(f: Flight, cmd: Command, ctx: FlightContext, now: n
         log('ACTIVATE', 'Strips posted on board');
         return { ok: true };
       }
+      case 'unpost': {
+        // strips posted by mistake go back to Printer / Pending; marks, estimates and
+        // reports stay on them
+        const u = needUnit();
+        if (u.phase !== 'ACTIVE') return { ok: false, error: `${f.callsign} strips are not on the ${unit} board` };
+        u.phase = 'PENDING';
+        log('UNPOST', 'Strips taken back to Pending');
+        return { ok: true };
+      }
       case 'print': {
         const u = printUnit(f, unit, ctx, now);
         if (!u) return { ok: false, error: `${f.callsign} does not route through ${unit}` };

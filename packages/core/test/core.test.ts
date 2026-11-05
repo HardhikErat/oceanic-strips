@@ -240,6 +240,24 @@ describe('unit hand-over', () => {
   });
 });
 
+describe('posting strips', () => {
+  it('strips posted by mistake go back to Pending with their marks', () => {
+    const f = mk('QTR842', 'AAA60 W1 AAA68', 330);
+    expect(f.units.VABX.phase).toBe('ACTIVE');
+    applyCommand(f, { type: 'mark', callsign: 'QTR842', unit: 'VABX', fix: 'AAA62', symbol: '✓', on: true }, ctx, T0);
+    expect(applyCommand(f, { type: 'unpost', callsign: 'QTR842', unit: 'VABX' }, ctx, T0).ok).toBe(true);
+    expect(f.units.VABX.phase).toBe('PENDING');
+    expect(f.units.VABX.marks['AAA62'].symbols).toEqual(['✓']);
+    expect(applyCommand(f, { type: 'unpost', callsign: 'QTR842', unit: 'VABX' }, ctx, T0).ok).toBe(false);
+    applyCommand(f, { type: 'activate', callsign: 'QTR842', unit: 'VABX' }, ctx, T0);
+    expect(f.units.VABX.phase).toBe('ACTIVE');
+  });
+  it('UNPOST / POST on the command line', () => {
+    expect(parseCommandLine('QTR842 UNPOST', 'VABX', T0, () => ['AAA60'])).toMatchObject({ type: 'unpost' });
+    expect(parseCommandLine('QTR842 POST', 'VABX', T0, () => ['AAA60'])).toMatchObject({ type: 'activate' });
+  });
+});
+
 describe('ADS-B identification (OCM §8.1)', () => {
   it('FL copied takes the level the aircraft is actually flying', () => {
     const f = mk('UAE7MY', 'AAA60 W1 AAA68', 350, { surv: 'LB1' });
