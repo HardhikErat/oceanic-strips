@@ -97,7 +97,8 @@ export function buildBoard(flights: Map<string, Flight>, unit: UnitConfig, now: 
       });
       return { airway, bays: list };
     })
-    .sort((a, c) => c.bays.reduce((n, b) => n + b.strips.length, 0) - a.bays.reduce((n, b) => n + b.strips.length, 0) || a.airway.localeCompare(c.airway));
+    // stable order so airways do not jump around as traffic changes: alphabetical, DCT last
+    .sort((a, c) => (a.airway === 'DCT' ? 1 : 0) - (c.airway === 'DCT' ? 1 : 0) || a.airway.localeCompare(c.airway, undefined, { numeric: true }));
 
   pending.sort((a, c) => (a.strips[0]?.eto ?? Infinity) - (c.strips[0]?.eto ?? Infinity));
   coordination.sort((a, c) => (a.strip.eto ?? 0) - (c.strip.eto ?? 0));
