@@ -32,6 +32,9 @@ Tag function **Oceanic: open strip board** opens the web board with that flight 
 .oceanic status
 ```
 
+## Download
+Ready-built DLL: **[Releases](https://github.com/HardhikErat/oceanic-strips/releases/latest)**. Download `OceanicStrips.dll` (verify it with the `.sha256` file), then follow *Installing* below. Building it yourself is optional.
+
 ## Building (32-bit, MSVC)
 EuroScope is a 32-bit application, so the DLL must be built for Win32. The SDK (`EuroScopePlugIn.h` and `EuroScopePlugInDll.lib`) comes with EuroScope. On this PC it is in `%APPDATA%\EuroScope\PlugIn`.
 

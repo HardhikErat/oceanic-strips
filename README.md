@@ -34,6 +34,8 @@ npm start
 
 Open http://127.0.0.1:8787, log in, and pick **Mumbai Radio**, **Chennai Radio** or **Kolkata Radio** as Controller, Coordinator or Observer.
 
+**EuroScope plugin:** download `OceanicStrips.dll` from [Releases](https://github.com/HardhikErat/oceanic-strips/releases/latest) and load it in EuroScope (see [plugin/README.md](plugin/README.md)).
+
 For development, `npm run dev` runs the server and Vite hot reload together (open http://localhost:5173).
 
 ### Sector files
