@@ -101,7 +101,7 @@ a { color: var(--accent); cursor: pointer; }
 
 /* ---------- board ---------- */
 .board { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 8px; min-height: 0; overflow: hidden; background: var(--board); }
-.left-stack { display: flex; flex-direction: column; gap: 8px; min-height: 0; width: min(calc(560px * var(--zoom)), 48vw); }
+.left-stack { display: flex; flex-direction: column; gap: 8px; min-height: 0; width: min(calc(560px * var(--zoom)), 30vw); }
 .left-stack .pending-col { flex: 3 1 0; }
 .left-stack .coord-col { flex: 2 1 0; }
 .left-stack .done-col { flex: 0 1 auto; max-height: 22%; }
@@ -122,8 +122,11 @@ a { color: var(--accent); cursor: pointer; }
 .done-row b { color: var(--text); }
 .done-row.selected { background: #2b3540; }
 
-.fix-board { overflow: auto; display: flex; gap: 10px; align-items: flex-start; min-height: 0; padding-bottom: 8px; }
-.route-col { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+/* airway columns wrap onto new rows instead of scrolling sideways; each column (and its
+   strips) shrinks to the panel width when the panel is narrower than a full-size strip */
+.fix-board { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; align-content: flex-start; min-height: 0; padding-bottom: 8px; }
+.route-col { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; width: min(calc(654px * var(--zoom)), 100%); min-width: 0; }
+.bay .strip { width: 100%; }
 .route-head {
   font-family: var(--printer); font-weight: 700; color: #fff; background: #0b0e10; padding: 2px 8px; border-radius: 3px; letter-spacing: 2px; width: max-content;
 }
