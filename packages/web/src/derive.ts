@@ -1,5 +1,5 @@
 // Derives the strip board for one unit from flights + conflicts.
-import { buildFixStrips, computeTrajectory, type FixStrip, type Flight, type TimedPoint, type TrajectoryOptions } from '@oceanic/core';
+import { buildFixStrips, computeTrajectory, indianRouteExcerpt, type FixStrip, type Flight, type TimedPoint, type TrajectoryOptions, type UnitAirspace } from '@oceanic/core';
 import type { BoardConflict, UnitConfig } from './state.ts';
 
 const MIN = 60_000;
@@ -11,6 +11,17 @@ export function trajectoryOf(f: Flight, now: number, opts: TrajectoryOptions = {
   const traj = computeTrajectory(f, now, opts);
   trajCache.set(f, { at: now, traj });
   return traj;
+}
+
+const excerptCache = new WeakMap<Flight, { text: string; trimmed: boolean }>();
+/** Route text for the strip: only the part through Indian oceanic airspace. */
+export function routeExcerptOf(f: Flight, airspaces: UnitAirspace[]): { text: string; trimmed: boolean } {
+  let c = excerptCache.get(f);
+  if (!c) {
+    c = indianRouteExcerpt(f.fpl.route, f.route, airspaces);
+    excerptCache.set(f, c);
+  }
+  return c;
 }
 
 export interface Bay {

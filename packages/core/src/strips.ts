@@ -98,6 +98,42 @@ export function stripIndicesForAirspace(route: RoutePoint[], a: UnitAirspace, to
   return [...idx].sort((x, y) => x - y);
 }
 
+/**
+ * The part of an Item 15 route that runs through Indian oceanic airspace: from the filed
+ * fix at or before the first Indian strip point to the filed fix at or after the last one.
+ * Anything left out is marked with "…". Falls back to the whole route when the route does
+ * not touch any of the given airspaces.
+ */
+export function indianRouteExcerpt(route: string, points: RoutePoint[], airspaces: UnitAirspace[]): { text: string; trimmed: boolean } {
+  const tokens = route.trim().split(/\s+/).filter(Boolean);
+  const idx = new Set<number>();
+  for (const a of airspaces) for (const i of stripIndicesForAirspace(points, a)) idx.add(i);
+  if (!tokens.length || !idx.size) return { text: route, trimmed: false };
+  const first = Math.min(...idx);
+  const last = Math.max(...idx);
+
+  // match the filed fixes (token before any "/speed-level" part) to route points, in order
+  const tokRoute: (number | undefined)[] = [];
+  let ri = 0;
+  for (const t of tokens) {
+    const base = t.split('/')[0];
+    let found: number | undefined;
+    for (let j = ri; j < points.length; j++) {
+      if (!points[j].boundary && points[j].name === base) { found = j; break; }
+    }
+    tokRoute.push(found);
+    if (found !== undefined) ri = found;
+  }
+  let start = 0;
+  let end = tokens.length - 1;
+  for (let k = 0; k < tokens.length; k++) if (tokRoute[k] !== undefined && tokRoute[k]! <= first) start = k;
+  for (let k = tokens.length - 1; k >= 0; k--) if (tokRoute[k] !== undefined && tokRoute[k]! >= last) end = k;
+  if (end < start) return { text: route, trimmed: false };
+  const head = start > 0 ? '… ' : '';
+  const tail = end < tokens.length - 1 ? ' …' : '';
+  return { text: head + tokens.slice(start, end + 1).join(' ') + tail, trimmed: !!(head || tail) };
+}
+
 export type StripState = 'LIVE' | 'PASSED';
 
 export interface FixStrip {

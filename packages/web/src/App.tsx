@@ -5,6 +5,7 @@ import { FlightPanel } from './components/FlightPanel.tsx';
 import { Modal, type Field } from './components/Modal.tsx';
 import { AuditLog, ConflictList, CoordLog } from './components/SidePanels.tsx';
 import { SituationDisplay } from './components/SituationDisplay.tsx';
+import { Splitter, usePanelSize } from './components/Splitter.tsx';
 import { buildBoard, fmtTime, trajectoryOf } from './derive.ts';
 import { client, unitById, useApp, useNow, type User } from './state.ts';
 
@@ -109,6 +110,10 @@ function Main() {
   const [cmd, setCmd] = useState('');
   const [cmdMsg, setCmdMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const cmdRef = useRef<HTMLInputElement>(null);
+  // resizable panels (drag the dividers; double-click resets)
+  const [sideW, resizeSide, resetSide] = usePanelSize('ui-side-w', () => 360, 240, () => window.innerWidth * 0.7);
+  const [fpW, resizeFp, resetFp] = usePanelSize('ui-fp-w', () => 470, 340, () => window.innerWidth * 0.8);
+  const [mapMax, setMapMax] = useState(false);
 
   const overdueMin = app.rules?.overdueMin ?? 3;
   const board = useMemo(() => buildBoard(app.flights, unit, now, overdueMin), [app.flights, unit, now, overdueMin]);
@@ -130,7 +135,7 @@ function Main() {
   }, [app.status?.source]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelected(undefined);
+      if (e.key === 'Escape') { setSelected(undefined); setMapMax(false); }
       if ((e.key === '/' || e.key === 'F2') && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
         cmdRef.current?.focus();
@@ -251,7 +256,10 @@ function Main() {
       : undefined;
 
   return (
-    <div className={`app ${flight ? 'with-panel' : ''}`} style={{ ['--zoom' as string]: zoom }}>
+    <div
+      className={`app ${flight ? 'with-panel' : ''}`}
+      style={{ ['--zoom' as string]: zoom, ['--side-w' as string]: `${sideW}px`, ['--fp-w' as string]: `${fpW}px` }}
+    >
       {neighbourList}
       <header className="topbar">
         <div className="unit">
@@ -322,6 +330,7 @@ function Main() {
           onEstimateOut={estimateOut}
           emptyHint={emptyHint}
         />
+        <Splitter dir="col" className="main-split" onDrag={(d) => resizeSide(-d)} onReset={resetSide} />
         <aside className="side">
           <nav className="tabs">
             <button className={tab === 'conflicts' ? 'on' : ''} onClick={() => setTab('conflicts')}>Conflicts {myConflicts.length ? <b className={los ? 'b-los' : 'b-warn'}>{myConflicts.length}</b> : null}</button>
@@ -333,13 +342,35 @@ function Main() {
           <div className="tab-body">
             {tab === 'conflicts' && <ConflictList conflicts={app.conflicts} unit={unit} canAck={canEdit} onSelect={(cs) => setSelected({ cs })} />}
             {tab === 'coord' && <CoordLog coord={app.coord} unit={unit} />}
-            {tab === 'map' && <SituationDisplay app={app} unit={unit} now={now} selected={selected?.cs} conflicts={app.conflicts} onSelect={(cs) => setSelected({ cs })} />}
+            {tab === 'map' && !mapMax && (
+              <SituationDisplay app={app} unit={unit} now={now} selected={selected?.cs} conflicts={app.conflicts} onSelect={(cs) => setSelected({ cs })} onToggleExpand={() => setMapMax(true)} />
+            )}
+            {tab === 'map' && mapMax && <div className="empty">Map is open full screen.</div>}
             {tab === 'log' && <AuditLog />}
             {tab === 'help' && <Help />}
           </div>
         </aside>
-        {flight && <FlightPanel flight={flight} unit={unit} canEdit={canEdit} focusFix={selected?.fix} onClose={() => setSelected(undefined)} />}
+        {flight && (
+          <FlightPanel
+            flight={flight}
+            unit={unit}
+            canEdit={canEdit}
+            focusFix={selected?.fix}
+            onClose={() => setSelected(undefined)}
+            onResize={(d) => resizeFp(-d)}
+            onResetSize={resetFp}
+          />
+        )}
       </main>
+      {mapMax && (
+        <div className="map-max">
+          <div className="map-max-head">
+            <b>{unit.radioName} – map</b>
+            <button onClick={() => setMapMax(false)}>✕ Close (Esc)</button>
+          </div>
+          <SituationDisplay app={app} unit={unit} now={now} selected={selected?.cs} conflicts={app.conflicts} onSelect={(cs) => setSelected({ cs })} expanded onToggleExpand={() => setMapMax(false)} />
+        </div>
+      )}
 
       <footer className="cmdline">
         <span className="prompt">{unit.id}&gt;</span>

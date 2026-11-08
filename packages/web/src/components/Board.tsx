@@ -3,6 +3,7 @@ import type { FixStrip, Flight } from '@oceanic/core';
 import { highlightFor, type Board as BoardData } from '../derive.ts';
 import { client, type BoardConflict, type UnitConfig } from '../state.ts';
 import { Strip } from './Strip.tsx';
+import { Splitter, usePanelSize } from './Splitter.tsx';
 
 interface Props {
   board: BoardData;
@@ -47,6 +48,9 @@ function useCollapsed(unitId: string) {
 
 export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onBox, onEstimateIn, onEstimateOut, emptyHint }: Props) {
   const [collapsed, toggleCollapsed] = useCollapsed(unit.id);
+  const [leftW, resizeLeft, resetLeft] = usePanelSize('ui-left-w', () => Math.min(560, window.innerWidth * 0.3), 260, () => window.innerWidth * 0.6);
+  const [pendH, resizePend, resetPend] = usePanelSize('ui-pend-h', () => window.innerHeight * 0.42, 70, () => window.innerHeight * 0.8);
+  const [doneH, resizeDone, resetDone] = usePanelSize('ui-done-h', () => 110, 36, () => window.innerHeight * 0.6);
   const strip = (s: FixStrip, f: Flight, compact = false) => (
     <Strip
       key={s.key}
@@ -62,7 +66,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
   );
 
   return (
-    <div className="board">
+    <div className="board" style={{ ['--left-w' as string]: `${leftW}px`, ['--pend-h' as string]: `${pendH}px`, ['--done-h' as string]: `${doneH}px` }}>
       <div className="left-stack">
       <section className="bay-col pending-col">
         <header className="bay-col-head">
@@ -92,6 +96,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
           ))}
         </div>
       </section>
+      <Splitter dir="row" onDrag={resizePend} onReset={resetPend} />
       <section className="bay-col coord-col">
         <header className="bay-col-head">
           <span>COORDINATION</span>
@@ -116,6 +121,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
           ))}
         </div>
       </section>
+      <Splitter dir="row" onDrag={(d) => resizeDone(-d)} onReset={resetDone} />
       <section className="bay-col done-col">
         <header className="bay-col-head">
           <span>DONE</span>
@@ -132,6 +138,7 @@ export function Board({ board, unit, conflicts, selected, canEdit, onSelect, onB
         </div>
       </section>
       </div>
+      <Splitter dir="col" className="left-split" onDrag={resizeLeft} onReset={resetLeft} />
 
       <section className="fix-board">
         {board.columns.length === 0 && (

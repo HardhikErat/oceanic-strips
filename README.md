@@ -66,7 +66,8 @@ The cache rebuilds automatically. The server log and the board's top bar warn in
 | **Fix bays** | One bay per reporting point, each with a black designator header. Bays are grouped in columns by ATS route and strips are sorted by estimate. This is how conflicts are found by scanning strips. |
 | **Coordination** | The exit strip moves here when the exit estimate is within 30 min (`coordLeadMin`) and has not been passed. **EST OUT** passes it. |
 | **Done** | Flights that have been handed off. Click one to recall it. |
-| **Side panel** | Conflicts · coordination log · map · audit log · help. |
+| **Side panel** | Conflicts · coordination log · map · audit log · help. The map has **⤢ Expand** for full screen (Esc closes). |
+| **Resizing** | Drag the dividers to resize: left column ↔ strip board, strip board ↔ side panel, Pending ↕ Coordination ↕ Done, and the flight panel's left edge. Double-click a divider to reset it. Sizes are remembered. |
 | **Command line** | Press `/` to focus it, e.g. `QTR8E R KITAL 0053 F350 M083 BOLUR 0123 DONSA`. Type `HELP` for the list. |
 
 **The strip** copies the Mumbai OCC paper strip.
@@ -83,7 +84,7 @@ Top row, left to right:
 The equipment box also shows the **SELCAL** code from the flight plan (e.g. DQ-CM).
 8. DOF, print time, strip n of total, and the direction chevron.
 
-The bottom row shows ADEP, the route as filed, ADES, ALTN and PBN.
+The bottom row shows ADEP, the route, ADES, ALTN and PBN. The route shows only the part through Indian oceanic airspace, from the filed fix where it enters to the one where it leaves. "…" marks what is left out; hover over it for the full route.
 
 Controller entries are drawn in a blue pen font, and the printed value they replace is struck through. Like the handwritten "45" in the photo, a time keeps only its minutes when the hour has not changed.
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { machOf, parsePositionReport, parseHHMM, type Command, type Conflict, type Flight } from '@oceanic/core';
 import { fmtSelcal, fmtTime, machText, trajectoryOf } from '../derive.ts';
 import { client, useApp, useNow, type UnitConfig } from '../state.ts';
+import { Splitter } from './Splitter.tsx';
 
 interface Props {
   flight: Flight;
@@ -11,6 +12,8 @@ interface Props {
   canEdit: boolean;
   focusFix?: string;
   onClose: () => void;
+  onResize?: (delta: number) => void;
+  onResetSize?: () => void;
 }
 
 const MARKS = ['✓', '✗', 'Ⓒ', 'R', '⊕', '!', '?'];
@@ -32,7 +35,7 @@ function ProbeResult({ result }: { result?: { ok: boolean; error?: string; confl
   );
 }
 
-export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Props) {
+export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose, onResize, onResetSize }: Props) {
   const app = useApp();
   const now = useNow(5000);
   const us = f.units[unit.id];
@@ -106,6 +109,7 @@ export function FlightPanel({ flight: f, unit, canEdit, focusFix, onClose }: Pro
 
   return (
     <aside className="flight-panel">
+      {onResize && <Splitter dir="col" className="fp-edge" onDrag={onResize} onReset={onResetSize} />}
       <header className="fp-head">
         <div>
           <div className="fp-cs">

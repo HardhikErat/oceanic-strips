@@ -96,15 +96,15 @@ a { color: var(--accent); cursor: pointer; }
 .setup-problems { background: #4a1414; border-bottom: 1px solid var(--bad); color: #ffd9d9; padding: 6px 14px; font-size: 12.5px; }
 .setup-problems ul { margin: 2px 0 0; padding-left: 18px; }
 .setup-problems.inline { border: 1px solid var(--bad); border-radius: 4px; }
-.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: 0; position: relative; }
-.app.with-panel .main { grid-template-columns: minmax(0, 1fr) 360px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 8px var(--side-w, 360px); min-height: 0; position: relative; }
+
 
 /* ---------- board ---------- */
-.board { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 8px; min-height: 0; overflow: hidden; background: var(--board); }
-.left-stack { display: flex; flex-direction: column; gap: 8px; min-height: 0; width: min(calc(560px * var(--zoom)), 30vw); }
-.left-stack .pending-col { flex: 3 1 0; }
-.left-stack .coord-col { flex: 2 1 0; }
-.left-stack .done-col { flex: 0 1 auto; max-height: 22%; }
+.board { display: grid; grid-template-columns: var(--left-w, 460px) 8px minmax(0, 1fr); padding: 8px; min-height: 0; overflow: hidden; background: var(--board); }
+.left-stack { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.left-stack .pending-col { flex: 0 0 var(--pend-h, 40%); }
+.left-stack .coord-col { flex: 1 1 0; min-height: 50px; }
+.left-stack .done-col { flex: 0 0 var(--done-h, 110px); }
 .bay-col { display: flex; flex-direction: column; min-height: 0; background: #262c32; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
 .bay-col-head {
   display: flex; justify-content: space-between; padding: 4px 8px; background: #101418; color: #c9d1d9; font-family: var(--printer); font-size: 11px; letter-spacing: 1px;
@@ -308,7 +308,8 @@ a { color: var(--accent); cursor: pointer; }
 
 /* ---------- flight panel ---------- */
 .flight-panel {
-  position: absolute; right: 360px; top: 0; bottom: 0; width: 470px; background: var(--panel); border-left: 1px solid var(--line);
+  position: absolute; right: calc(var(--side-w, 360px) + 8px); top: 0; bottom: 0; width: var(--fp-w, 470px); max-width: calc(100% - var(--side-w, 360px) - 60px);
+  background: var(--panel); border-left: 1px solid var(--line);
   box-shadow: -8px 0 18px rgba(0, 0, 0, 0.45); overflow: auto; z-index: 5;
 }
 .fp-head { display: flex; justify-content: space-between; padding: 10px 12px; background: #11161a; position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--line); }
@@ -403,4 +404,29 @@ a { color: var(--accent); cursor: pointer; }
   .flight-panel { right: 0; width: min(470px, 100%); }
   .board { grid-template-columns: 1fr; overflow: auto; }
   .left-stack { width: 100%; }
+}
+
+
+/* ---------- resizable panels ---------- */
+.splitter { position: relative; flex-shrink: 0; background: transparent; z-index: 6; }
+.splitter.col { width: 8px; cursor: col-resize; }
+.splitter.row { height: 8px; cursor: row-resize; }
+.splitter::after { content: ''; position: absolute; border-radius: 2px; background: #3a444e; transition: background 0.15s; }
+.splitter.col::after { left: 3px; top: 0; bottom: 0; width: 2px; }
+.splitter.row::after { top: 3px; left: 0; right: 0; height: 2px; }
+.splitter:hover::after, body.resizing-col .splitter.col::after, body.resizing-row .splitter.row::after { background: var(--accent); }
+.main-split { background: #11161a; }
+.flight-panel .fp-edge { position: absolute; left: -4px; top: 0; bottom: 0; z-index: 7; }
+body.resizing-col, body.resizing-col * { cursor: col-resize !important; user-select: none !important; }
+body.resizing-row, body.resizing-row * { cursor: row-resize !important; user-select: none !important; }
+
+/* ---------- full-screen map ---------- */
+.map-max { position: fixed; inset: 0; z-index: 60; background: var(--panel); display: flex; flex-direction: column; }
+.map-max-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: #0f1316; border-bottom: 1px solid var(--line); }
+.map-max .sitdisp { flex: 1; min-height: 0; }
+
+@media (max-width: 1100px) {
+  .main-split, .left-split { display: none; }
+  .board { grid-template-columns: 1fr; }
+  .flight-panel { max-width: 100%; }
 }

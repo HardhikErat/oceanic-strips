@@ -13,11 +13,14 @@ interface Props {
   selected?: string;
   conflicts: BoardConflict[];
   onSelect: (cs: string) => void;
+  /** open/close the full-screen map */
+  onToggleExpand?: () => void;
+  expanded?: boolean;
 }
 
 const PAD = 2;
 
-export function SituationDisplay({ app, unit, now, selected, conflicts, onSelect }: Props) {
+export function SituationDisplay({ app, unit, now, selected, conflicts, onSelect, onToggleExpand, expanded }: Props) {
   const air = app.airspaces.find((a) => a.id === unit.id);
   const bounds = useMemo(() => {
     const pts = (air?.polygons ?? []).flat();
@@ -69,6 +72,11 @@ export function SituationDisplay({ app, unit, now, selected, conflicts, onSelect
         <span><i className="lg adsb" /> ADS-B (backup surveillance)</span>
         <span><i className="lg proc" /> procedural – estimated from strips</span>
         <button className="mini" onClick={() => setView({ x: 0, y: 0, w: W, h: H })}>Reset</button>
+        {onToggleExpand && (
+          <button className="mini" onClick={onToggleExpand} title={expanded ? 'Back to the side panel' : 'Open the map full screen'}>
+            {expanded ? '⤡ Shrink' : '⤢ Expand'}
+          </button>
+        )}
       </div>
       <svg
         ref={svgRef}

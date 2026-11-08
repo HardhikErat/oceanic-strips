@@ -1,7 +1,8 @@
 // One fix strip, laid out like the AAI Mumbai OCC printed strip (PLAN.md §1.1).
 // Printed fields use the printer font; controller entries are drawn in blue "pen".
 import type { FixStrip, Flight } from '@oceanic/core';
-import { fmtSelcal, fmtTime, machText, penTime, type StripHighlight } from '../derive.ts';
+import { fmtSelcal, fmtTime, machText, penTime, routeExcerptOf, type StripHighlight } from '../derive.ts';
+import { client } from '../state.ts';
 
 interface Props {
   strip: FixStrip;
@@ -41,7 +42,8 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
   const partner = highlight?.conflicts.map((c) => (c.a === f.callsign ? c.b : c.a));
   const nextReport = us?.nextReportFix === s.fix && s.state !== 'PASSED';
   const restriction = f.restrictions.find((r) => r.fix === s.fix);
-  const route = f.fpl.route;
+  // only the part of the route through Indian oceanic airspace; full route on hover
+  const routeEx = routeExcerptOf(f, client.state.airspaces);
   // the aircraft is at a different level from the strip (common on VATSIM). For ADS-B aircraft
   // it is surveillance data; for procedural aircraft it is only the network position, so it
   // is shown as a question for the controller to confirm with the pilot.
@@ -147,7 +149,7 @@ export function Strip({ strip: s, flight: f, highlight, selected, onSelect, onBo
         </div>
         <div className="row2">
           <span className="adep">{f.fpl.adep}</span>
-          <span className="route">{route}</span>
+          <span className="route" title={routeEx.trimmed ? `Full route: ${f.fpl.route}` : undefined}>{routeEx.text}</span>
           <span className="ades">{f.fpl.ades}</span>
           <span className="altn">{f.fpl.altn}</span>
           <span className="pbn">{f.pbn ? `PBN/${f.pbn}` : ''}</span>

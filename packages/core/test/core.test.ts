@@ -15,6 +15,7 @@ import {
   printUnit,
   addBoundaryPoints,
   withDistances,
+  indianRouteExcerpt,
   type Flight,
   type FlightContext,
   type NavData,
@@ -177,6 +178,21 @@ describe('boundary crossing points for direct routes', () => {
       'MANUAL',
     );
     expect(f.route.map((p) => p.name)).toContain('1500N06700E');
+  });
+});
+
+describe('Indian part of the route on strips', () => {
+  const box = (w: number, e: number) => [{ lat: 10, lon: w }, { lat: 20, lon: w }, { lat: 20, lon: e }, { lat: 10, lon: e }];
+  const air = [{ id: 'VABX', polygons: [box(61.5, 64.5)] }];
+  const routeOf = (r: string) => withDistances(addBoundaryPoints(expandRoute(r, 'XXXX', 'YYYY', nav).points, air));
+  it('keeps the filed fixes around Indian airspace and marks the rest with …', () => {
+    const r = 'N0480F350 NNN19 N1 AAA64 W1 AAA60 DCT 1530N05500E';
+    // NNN19 is inside the test airspace, so the excerpt starts there; the speed group before it and the far point after AAA60 are cut
+    expect(indianRouteExcerpt(r, routeOf(r), air).text).toBe('… NNN19 N1 AAA64 W1 AAA60 …');
+  });
+  it('shows the whole route when it does not touch Indian airspace', () => {
+    const r = 'AAA66 W1 AAA68';
+    expect(indianRouteExcerpt(r, routeOf(r), air)).toEqual({ text: r, trimmed: false });
   });
 });
 
